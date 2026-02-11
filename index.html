@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Konter</title>
+  <title>Dashboard Absensi & Upah</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -32,7 +32,7 @@
       padding:12px;
       border:none;
       border-radius:8px;
-      font-size:16px;
+      font-size:15px;
       background:#ffffff;
       color:#0d6efd;
       font-weight:bold;
@@ -56,99 +56,103 @@
     .content.active{
       display:block;
     }
+
+    .content h3{
+      margin-top:0;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- JUDUL -->
+  <!-- HEADER -->
   <header>
-    <h2>📊 Dashboard Konter</h2>
-    <p>Data Harian, Bulanan & Tahunan</p>
+    <h2>📋 Dashboard Absensi & Upah</h2>
+    <p>Konter Teknisi</p>
   </header>
 
-  <!-- TOMBOL -->
+  <!-- TOMBOL MENU -->
   <div class="btn-group">
     <button id="btnHarian" class="active" onclick="showData('harian')">Harian</button>
     <button id="btnBulanan" onclick="showData('bulanan')">Bulanan</button>
     <button id="btnTahunan" onclick="showData('tahunan')">Tahunan</button>
   </div>
 
- <!-- KONTEN -->
-<div id="harian" class="content active">
-  <h3>📅 Data Harian</h3>
-  <p>Total Hari Ini:</p>
-  <h2>Rp <span id="harianTotal">0</span></h2>
-</div>
+  <!-- KONTEN HARIAN -->
+  <div id="harian" class="content active">
+    <h3>📅 Rekap Upah Harian</h3>
+    <p>Soleh : Rp <span id="soleh">0</span></p>
+    <p>Yudi : Rp <span id="yudi">0</span></p>
+    <p>Farhan : Rp <span id="farhan">0</span></p>
+    <p>Zaka : Rp <span id="zaka">0</span></p>
+  </div>
 
-<div id="bulanan" class="content">
-  <h3>🗓️ Data Bulanan</h3>
-  <p>Total Bulan Ini:</p>
-  <h2>Rp <span id="bulananTotal">0</span></h2>
-</div>
+  <!-- KONTEN BULANAN -->
+  <div id="bulanan" class="content">
+    <h3>🗓️ Rekap Upah Bulanan</h3>
+    <p>Gunakan data yang sama (bisa difilter nanti)</p>
+  </div>
 
-<div id="tahunan" class="content">
-  <h3>📆 Data Tahunan</h3>
-  <p>Total Tahun Ini:</p>
-  <h2>Rp <span id="tahunanTotal">0</span></h2>
-</div>
-<div class="content active">
-  <h3>📋 Rekap Upah Kerja</h3>
-  <p>Soleh : Rp <span id="soleh">0</span></p>
-  <p>Yudi : Rp <span id="yudi">0</span></p>
-  <p>Farhan : Rp <span id="farhan">0</span></p>
-  <p>Zaka : Rp <span id="zaka">0</span></p>
-</div>
-  <!-- SCRIPT -->
+  <!-- KONTEN TAHUNAN -->
+  <div id="tahunan" class="content">
+    <h3>📆 Rekap Upah Tahunan</h3>
+    <p>Gunakan data yang sama (bisa difilter nanti)</p>
+  </div>
+
+  <!-- SCRIPT MENU -->
   <script>
     function showData(type){
-      // sembunyikan semua
       document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.btn-group button').forEach(el => el.classList.remove('active'));
 
-      // tampilkan sesuai tombol
       document.getElementById(type).classList.add('active');
-      document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+      document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1))
+        .classList.add('active');
     }
   </script>
-<script>
-const CSV_ABSENSI = "ISI_LINK_CSV_ABSENSI_KAMU";
 
-const UPAH = {
-  Soleh: 100000,
-  Yudi: 100000,
-  Farhan: 50000,
-  Zaka: 100000
-};
-
-fetch(CSV_ABSENSI)
-  .then(r => r.text())
-  .then(csv => {
-    const rows = csv.split("\n").slice(1);
-
-    let total = {
-      Soleh: 0,
-      Yudi: 0,
-      Farhan: 0,
-      Zaka: 0
+  <!-- SCRIPT ABSENSI & UPAH -->
+  <script>
+    const CSV_ABSENSI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAP_R50frV13whqx54ctjplc-8xhcN53rHEVk5mkhLeZE283xWnr6TdTBFr-KFymEiaYE_NWgGthpo/pub?gid=716772016&single=true&output=csv";
+    const UPAH = {
+      Soleh: 100000,
+      Yudi: 100000,
+      Farhan: 50000,
+      Zaka: 100000
     };
 
-    rows.forEach(r => {
-      const c = r.split(",");
+    fetch(CSV_ABSENSI)
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.split("\n").slice(1);
 
-      const nama = c[1]?.trim();
-      const hadir = c[2]?.trim();
+        let total = {
+          Soleh: 0,
+          Yudi: 0,
+          Farhan: 0,
+          Zaka: 0
+        };
 
-      if (hadir === "Hadir" && UPAH[nama]) {
-        total[nama] += UPAH[nama];
-      }
-    });
+        rows.forEach(r => {
+          const c = r.split(",");
 
-    document.getElementById("soleh").innerText = total.Soleh.toLocaleString("id-ID");
-    document.getElementById("yudi").innerText = total.Yudi.toLocaleString("id-ID");
-    document.getElementById("farhan").innerText = total.Farhan.toLocaleString("id-ID");
-    document.getElementById("zaka").innerText = total.Zaka.toLocaleString("id-ID");
-  });
-</script>
+          const nama = c[1]?.trim();    // kolom B = NAMA
+          const hadir = c[2]?.trim();  // kolom C = KEHADIRAN
+
+          if (hadir === "Hadir" && UPAH[nama]) {
+            total[nama] += UPAH[nama];
+          }
+        });
+
+        document.getElementById("soleh").innerText = total.Soleh.toLocaleString("id-ID");
+        document.getElementById("yudi").innerText = total.Yudi.toLocaleString("id-ID");
+        document.getElementById("farhan").innerText = total.Farhan.toLocaleString("id-ID");
+        document.getElementById("zaka").innerText = total.Zaka.toLocaleString("id-ID");
+      })
+      .catch(err => {
+        console.error("Gagal ambil data absensi:", err);
+      });
+  </script>
+
 </body>
 </html>
