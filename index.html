@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Absensi & Upah</title>
+  <title>Dashboard Konter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -10,149 +10,122 @@
       font-family: Arial, sans-serif;
       background:#f2f2f2;
       margin:0;
-      padding:0;
     }
-
     header{
       background:#0d6efd;
-      color:white;
-      padding:15px;
+      color:#fff;
       text-align:center;
+      padding:15px;
     }
-
-    .btn-group{
+    .tabs{
       display:flex;
-      justify-content:space-around;
-      margin:15px;
+      margin:10px;
+      gap:6px;
     }
-
-    .btn-group button{
+    .tabs button{
       flex:1;
-      margin:0 5px;
-      padding:12px;
+      padding:10px;
       border:none;
-      border-radius:8px;
-      font-size:15px;
-      background:#ffffff;
-      color:#0d6efd;
+      border-radius:6px;
+      background:#fff;
       font-weight:bold;
-      box-shadow:0 2px 5px rgba(0,0,0,0.2);
+      color:#0d6efd;
     }
-
-    .btn-group button.active{
+    .tabs button.active{
       background:#0d6efd;
-      color:white;
+      color:#fff;
     }
-
-    .content{
-      background:white;
-      margin:15px;
-      padding:20px;
-      border-radius:10px;
-      box-shadow:0 2px 5px rgba(0,0,0,0.2);
+    .box{
+      background:#fff;
+      margin:10px;
+      padding:15px;
+      border-radius:8px;
+      box-shadow:0 2px 4px rgba(0,0,0,.15);
       display:none;
     }
-
-    .content.active{
+    .box.active{
       display:block;
     }
-
-    .content h3{
-      margin-top:0;
+    .total{
+      font-size:22px;
+      font-weight:bold;
+      margin-top:10px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <h2>📋 Dashboard Absensi & Upah</h2>
-    <p>Konter Teknisi</p>
-  </header>
+<header>
+  <h2>📊 Dashboard Konter</h2>
+  <small>Data Harian, Bulanan & Tahunan</small>
+</header>
 
-  <!-- TOMBOL MENU -->
-  <div class="btn-group">
-    <button id="btnHarian" class="active" onclick="showData('harian')">Harian</button>
-    <button id="btnBulanan" onclick="showData('bulanan')">Bulanan</button>
-    <button id="btnTahunan" onclick="showData('tahunan')">Tahunan</button>
-  </div>
+<div class="tabs">
+  <button id="btnHarian" class="active" onclick="show('harian')">Harian</button>
+  <button id="btnBulanan" onclick="show('bulanan')">Bulanan</button>
+  <button id="btnTahunan" onclick="show('tahunan')">Tahunan</button>
+</div>
 
-  <!-- KONTEN HARIAN -->
-  <div id="harian" class="content active">
-    <h3>📅 Rekap Upah Harian</h3>
-    <p>Soleh : Rp <span id="soleh">0</span></p>
-    <p>Yudi : Rp <span id="yudi">0</span></p>
-    <p>Farhan : Rp <span id="farhan">0</span></p>
-    <p>Zaka : Rp <span id="zaka">0</span></p>
-  </div>
+<div id="harian" class="box active">
+  <h3>📅 Data Hari Ini</h3>
+  <div class="total">Rp <span id="harianTotal">0</span></div>
+</div>
 
-  <!-- KONTEN BULANAN -->
-  <div id="bulanan" class="content">
-    <h3>🗓️ Rekap Upah Bulanan</h3>
-    <p>Gunakan data yang sama (bisa difilter nanti)</p>
-  </div>
+<div id="bulanan" class="box">
+  <h3>🗓️ Data Bulan Ini</h3>
+  <div class="total">Rp <span id="bulananTotal">0</span></div>
+</div>
 
-  <!-- KONTEN TAHUNAN -->
-  <div id="tahunan" class="content">
-    <h3>📆 Rekap Upah Tahunan</h3>
-    <p>Gunakan data yang sama (bisa difilter nanti)</p>
-  </div>
+<div id="tahunan" class="box">
+  <h3>📆 Data Tahun Ini</h3>
+  <div class="total">Rp <span id="tahunanTotal">0</span></div>
+</div>
 
-  <!-- SCRIPT MENU -->
-  <script>
-    function showData(type){
-      document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.btn-group button').forEach(el => el.classList.remove('active'));
+<script>
+function show(id){
+  document.querySelectorAll('.box').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('btn'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('active');
+}
 
-      document.getElementById(type).classList.add('active');
-      document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1))
-        .classList.add('active');
-    }
-  </script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAP_R50frV13whqx54ctjplc-8xhcN53rHEVk5mkhLeZE283xWnr6TdTBFr-KFymEiaYE_NWgGthpo/pub?gid=716772016&single=true&output=csv";
 
-  <!-- SCRIPT ABSENSI & UPAH -->
-  <script>
-    const CSV_ABSENSI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAP_R50frV13whqx54ctjplc-8xhcN53rHEVk5mkhLeZE283xWnr6TdTBFr-KFymEiaYE_NWgGthpo/pub?gid=716772016&single=true&output=csv";
-    const UPAH = {
-      Soleh: 100000,
-      Yudi: 100000,
-      Farhan: 50000,
-      Zaka: 100000
-    };
+fetch(CSV_URL)
+  .then(r => r.text())
+  .then(csv => {
+    const rows = csv.split("\n").slice(1);
 
-    fetch(CSV_ABSENSI)
-      .then(res => res.text())
-      .then(csv => {
-        const rows = csv.split("\n").slice(1);
+    const now = new Date();
+    const today = now.toLocaleDateString("id-ID");
+    const month = now.toLocaleString("id-ID",{month:"long"});
+    const year = now.getFullYear().toString();
 
-        let total = {
-          Soleh: 0,
-          Yudi: 0,
-          Farhan: 0,
-          Zaka: 0
-        };
+    let harian=0, bulanan=0, tahunan=0;
 
-        rows.forEach(r => {
-          const c = r.split(",");
+    rows.forEach(r=>{
+      const c = r.split(",");
 
-          const nama = c[1]?.trim();    // kolom B = NAMA
-          const hadir = c[2]?.trim();  // kolom C = KEHADIRAN
+      const tgl = c[0];
+      const bln = c[2];
+      const thn = c[3];
+      const total = parseInt(c[11]) || 0;
 
-          if (hadir === "Hadir" && UPAH[nama]) {
-            total[nama] += UPAH[nama];
-          }
-        });
+      if(tgl === today) harian += total;
+      if(bln === month && thn === year) bulanan += total;
+      if(thn === year) tahunan += total;
+    });
 
-        document.getElementById("soleh").innerText = total.Soleh.toLocaleString("id-ID");
-        document.getElementById("yudi").innerText = total.Yudi.toLocaleString("id-ID");
-        document.getElementById("farhan").innerText = total.Farhan.toLocaleString("id-ID");
-        document.getElementById("zaka").innerText = total.Zaka.toLocaleString("id-ID");
-      })
-      .catch(err => {
-        console.error("Gagal ambil data absensi:", err);
-      });
-  </script>
+    document.getElementById("harianTotal").innerText = harian.toLocaleString("id-ID");
+    document.getElementById("bulananTotal").innerText = bulanan.toLocaleString("id-ID");
+    document.getElementById("tahunanTotal").innerText = tahunan.toLocaleString("id-ID");
+  })
+  .catch(err=>{
+    alert("Gagal ambil data CSV");
+    console.error(err);
+  });
+</script>
 
 </body>
 </html>
