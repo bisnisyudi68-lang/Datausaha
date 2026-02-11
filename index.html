@@ -92,7 +92,13 @@
   <p>Total Tahun Ini:</p>
   <h2>Rp <span id="tahunanTotal">0</span></h2>
 </div>
-
+<div class="content active">
+  <h3>📋 Rekap Upah</h3>
+  <p>Soleh : Rp <span id="soleh">0</span></p>
+  <p>Yudi : Rp <span id="yudi">0</span></p>
+  <p>Farhan : Rp <span id="farhan">0</span></p>
+  <p>Zaka : Rp <span id="zaka">0</span></p>
+</div>
   <!-- SCRIPT -->
   <script>
     function showData(type){
@@ -141,6 +147,29 @@ fetch(CSV_URL)
   })
   .catch(err => {
     console.error("Gagal ambil data:", err);
+  });
+</script>
+<script>
+const CSV_ABSENSI = "ISI_LINK_CSV_ABSENSI_KAMU";
+
+fetch(CSV_ABSENSI)
+  .then(r => r.text())
+  .then(csv => {
+    const rows = csv.split("\n").slice(1);
+    let so=0, yu=0, fa=0, za=0;
+
+    rows.forEach(r => {
+      const c = r.split(",");
+      so += parseInt(c[5]) || 0; // F
+      yu += parseInt(c[6]) || 0; // G
+      fa += parseInt(c[7]) || 0; // H
+      za += parseInt(c[8]) || 0; // I
+    });
+
+    soleh.innerText = so.toLocaleString("id-ID");
+    yudi.innerText = yu.toLocaleString("id-ID");
+    farhan.innerText = fa.toLocaleString("id-ID");
+    zaka.innerText = za.toLocaleString("id-ID");
   });
 </script>
 </body>
