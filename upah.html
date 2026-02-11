@@ -109,11 +109,11 @@ fetch(sheetURL)
   const rows = data.split("\n").slice(1);
   const bulanSekarang = new Date().getMonth() + 1;
 
-  let totals = {
-    "Soleh":0,
-    "Farhan":0,
-    "Yudi":0,
-    "Zaka":0
+  let dataHarian = {
+    "Soleh": new Set(),
+    "Farhan": new Set(),
+    "Yudi": new Set(),
+    "Zaka": new Set()
   };
 
   rows.forEach(row => {
@@ -124,30 +124,32 @@ fetch(sheetURL)
     if(!tanggalStr || !upahPerHari[nama]) return;
 
     const parts = tanggalStr.split("/");
+    const hari = parts[0];
     const bulan = parseInt(parts[1]);
 
     if(bulan === bulanSekarang){
-
-      const hari = parts[0];
-      const upah = upahPerHari[nama];
-
-      document.getElementById(nama).innerHTML +=
-        `<div class="item">
-          <span>Tgl ${hari}</span>
-          <span>Rp ${upah.toLocaleString("id-ID")}</span>
-        </div>`;
-
-      totals[nama] += upah;
+      dataHarian[nama].add(hari); // simpan tanggal unik
     }
   });
 
-  for(let nama in totals){
+  for(let nama in dataHarian){
+
+    let total = 0;
+
+    dataHarian[nama].forEach(hari => {
+      document.getElementById(nama).innerHTML +=
+        `<div class="item">
+          <span>Tgl ${hari}</span>
+          <span>Rp ${upahPerHari[nama].toLocaleString("id-ID")}</span>
+        </div>`;
+      total += upahPerHari[nama];
+    });
+
     document.getElementById("total"+nama).innerText =
-      "Total: Rp " + totals[nama].toLocaleString("id-ID");
+      "Total: Rp " + total.toLocaleString("id-ID");
   }
 
 });
 </script>
-
 </body>
 </html>
