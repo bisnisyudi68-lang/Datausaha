@@ -112,64 +112,42 @@
     }
   </script>
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAP_R50frV13whqx54ctjplc-8xhcN53rHEVk5mkhLeZE283xWnr6TdTBFr-KFymEiaYE_NWgGthpo/pub?gid=716772016&single=true&output=csv";
-
-fetch(CSV_URL)
-  .then(res => res.text())
-  .then(csv => {
-    const rows = csv.split("\n").slice(1);
-
-    const now = new Date();
-    const today = now.toLocaleDateString("id-ID");
-    const bulan = now.toLocaleString("id-ID", { month: "long" });
-    const tahun = now.getFullYear().toString();
-
-    let totalHarian = 0;
-    let totalBulanan = 0;
-    let totalTahunan = 0;
-
-    rows.forEach(r => {
-      const c = r.split(",");
-
-      const tgl = c[0];        // TANGGAL
-      const bln = c[2];        // BULAN
-      const thn = c[3];        // TAHUN
-      const total = parseInt(c[11]) || 0; // TOTAL HARGA
-
-      if (tgl === today) totalHarian += total;
-      if (bln === bulan && thn === tahun) totalBulanan += total;
-      if (thn === tahun) totalTahunan += total;
-    });
-
-    document.getElementById("harianTotal").innerText = totalHarian.toLocaleString("id-ID");
-    document.getElementById("bulananTotal").innerText = totalBulanan.toLocaleString("id-ID");
-    document.getElementById("tahunanTotal").innerText = totalTahunan.toLocaleString("id-ID");
-  })
-  .catch(err => {
-    console.error("Gagal ambil data:", err);
-  });
-</script>
-<script>
 const CSV_ABSENSI = "ISI_LINK_CSV_ABSENSI_KAMU";
+
+const UPAH = {
+  Soleh: 100000,
+  Yudi: 100000,
+  Farhan: 50000,
+  Zaka: 100000
+};
 
 fetch(CSV_ABSENSI)
   .then(r => r.text())
   .then(csv => {
     const rows = csv.split("\n").slice(1);
-    let so=0, yu=0, fa=0, za=0;
+
+    let total = {
+      Soleh: 0,
+      Yudi: 0,
+      Farhan: 0,
+      Zaka: 0
+    };
 
     rows.forEach(r => {
       const c = r.split(",");
-      so += parseInt(c[5]) || 0; // F
-      yu += parseInt(c[6]) || 0; // G
-      fa += parseInt(c[7]) || 0; // H
-      za += parseInt(c[8]) || 0; // I
+
+      const nama = c[1]?.trim();
+      const hadir = c[2]?.trim();
+
+      if (hadir === "Hadir" && UPAH[nama]) {
+        total[nama] += UPAH[nama];
+      }
     });
 
-    soleh.innerText = so.toLocaleString("id-ID");
-    yudi.innerText = yu.toLocaleString("id-ID");
-    farhan.innerText = fa.toLocaleString("id-ID");
-    zaka.innerText = za.toLocaleString("id-ID");
+    document.getElementById("soleh").innerText = total.Soleh.toLocaleString("id-ID");
+    document.getElementById("yudi").innerText = total.Yudi.toLocaleString("id-ID");
+    document.getElementById("farhan").innerText = total.Farhan.toLocaleString("id-ID");
+    document.getElementById("zaka").innerText = total.Zaka.toLocaleString("id-ID");
   });
 </script>
 </body>
