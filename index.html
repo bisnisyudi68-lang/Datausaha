@@ -74,21 +74,24 @@
     <button id="btnTahunan" onclick="showData('tahunan')">Tahunan</button>
   </div>
 
-  <!-- KONTEN -->
-  <div id="harian" class="content active">
-    <h3>📅 Data Harian</h3>
-    <p>Isi data harian di sini</p>
-  </div>
+ <!-- KONTEN -->
+<div id="harian" class="content active">
+  <h3>📅 Data Harian</h3>
+  <p>Total Hari Ini:</p>
+  <h2>Rp <span id="harianTotal">0</span></h2>
+</div>
 
-  <div id="bulanan" class="content">
-    <h3>🗓️ Data Bulanan</h3>
-    <p>Isi data bulanan di sini</p>
-  </div>
+<div id="bulanan" class="content">
+  <h3>🗓️ Data Bulanan</h3>
+  <p>Total Bulan Ini:</p>
+  <h2>Rp <span id="bulananTotal">0</span></h2>
+</div>
 
-  <div id="tahunan" class="content">
-    <h3>📆 Data Tahunan</h3>
-    <p>Isi data tahunan di sini</p>
-  </div>
+<div id="tahunan" class="content">
+  <h3>📆 Data Tahunan</h3>
+  <p>Total Tahun Ini:</p>
+  <h2>Rp <span id="tahunanTotal">0</span></h2>
+</div>
 
   <!-- SCRIPT -->
   <script>
@@ -102,6 +105,43 @@
       document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
     }
   </script>
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAP_R50frV13whqx54ctjplc-8xhcN53rHEVk5mkhLeZE283xWnr6TdTBFr-KFymEiaYE_NWgGthpo/pub?gid=716772016&single=true&output=csv";
 
+fetch(CSV_URL)
+  .then(res => res.text())
+  .then(csv => {
+    const rows = csv.split("\n").slice(1);
+
+    const now = new Date();
+    const today = now.toLocaleDateString("id-ID");
+    const bulan = now.toLocaleString("id-ID", { month: "long" });
+    const tahun = now.getFullYear().toString();
+
+    let totalHarian = 0;
+    let totalBulanan = 0;
+    let totalTahunan = 0;
+
+    rows.forEach(r => {
+      const c = r.split(",");
+
+      const tgl = c[0];        // TANGGAL
+      const bln = c[2];        // BULAN
+      const thn = c[3];        // TAHUN
+      const total = parseInt(c[11]) || 0; // TOTAL HARGA
+
+      if (tgl === today) totalHarian += total;
+      if (bln === bulan && thn === tahun) totalBulanan += total;
+      if (thn === tahun) totalTahunan += total;
+    });
+
+    document.getElementById("harianTotal").innerText = totalHarian.toLocaleString("id-ID");
+    document.getElementById("bulananTotal").innerText = totalBulanan.toLocaleString("id-ID");
+    document.getElementById("tahunanTotal").innerText = totalTahunan.toLocaleString("id-ID");
+  })
+  .catch(err => {
+    console.error("Gagal ambil data:", err);
+  });
+</script>
 </body>
 </html>
