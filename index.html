@@ -73,8 +73,8 @@
 </div>
 
 <div id="bulanan" class="box">
-  <h3>🗓️ Data Bulan Ini</h3>
-  <div class="total">Rp <span id="bulananTotal">0</span></div>
+  <h3>🗓️ Rekap Bulanan</h3>
+  <div id="listBulanan"></div>
 </div>
 
 <div id="tahunan" class="box">
@@ -126,6 +126,31 @@ fetch(CSV_URL)
     console.error(err);
   });
 </script>
+<script>
+const bulanMap = {};
 
+fetch(CSV_URL)
+  .then(r => r.text())
+  .then(csv => {
+    const rows = csv.split("\n").slice(1);
+
+    rows.forEach(r => {
+      const c = r.split(",");
+
+      const bulan = c[2];              // BULAN
+      const total = parseInt(c[11])||0; // TOTAL HARGA
+
+      if(!bulanMap[bulan]) bulanMap[bulan] = 0;
+      bulanMap[bulan] += total;
+    });
+
+    let html = "";
+    for (const b in bulanMap) {
+      html += `<p>${b} : <strong>Rp ${bulanMap[b].toLocaleString("id-ID")}</strong></p>`;
+    }
+
+    document.getElementById("listBulanan").innerHTML = html;
+  });
+</script>
 </body>
 </html>
