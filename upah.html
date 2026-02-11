@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upah Harian</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+button {
+  background: #2e86de;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1b4f72;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+table, th, td {
+  border: 1px solid #ddd;
+}
+
+th, td {
+  padding: 8px;
+  text-align: center;
+}
+
+.total {
+  font-weight: bold;
+  margin-top: 10px;
+  text-align: right;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Upah Harian Karyawan</h2>
+
+  <input type="date" id="tanggal">
+
+  <select id="karyawan">
+    <option value="">Pilih Karyawan</option>
+    <option value="Soleh">Soleh</option>
+    <option value="Farhan">Farhan</option>
+    <option value="Yudi">Yudi</option>
+    <option value="Zaka">Zaka</option>
+  </select>
+
+  <button onclick="tambahUpah()">Tambah Upah</button>
+
+  <table id="tabelUpah">
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Nama</th>
+        <th>Upah</th>
+        <th>Hapus</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="total" id="totalUpah">Total: Rp 0</div>
+</div>
+
+<script>
+let total = 0;
+
+function getUpah(nama) {
+  if (nama === "Soleh") return 100000;
+  if (nama === "Farhan") return 50000;
+  if (nama === "Yudi") return 100000;
+  if (nama === "Zaka") return 100000;
+  return 0;
+}
+
+function tambahUpah() {
+  const tanggal = document.getElementById("tanggal").value;
+  const nama = document.getElementById("karyawan").value;
+
+  if (!tanggal || !nama) {
+    alert("Pilih tanggal dan karyawan dulu!");
+    return;
+  }
+
+  const upah = getUpah(nama);
+  total += upah;
+
+  const tabel = document.querySelector("#tabelUpah tbody");
+  const row = tabel.insertRow();
+
+  row.insertCell(0).innerText = tanggal;
+  row.insertCell(1).innerText = nama;
+  row.insertCell(2).innerText = "Rp " + upah.toLocaleString("id-ID");
+
+  const btnHapus = document.createElement("button");
+  btnHapus.innerText = "X";
+  btnHapus.style.background = "red";
+  btnHapus.style.color = "white";
+  btnHapus.onclick = function() {
+    total -= upah;
+    row.remove();
+    updateTotal();
+  };
+
+  row.insertCell(3).appendChild(btnHapus);
+
+  updateTotal();
+}
+
+function updateTotal() {
+  document.getElementById("totalUpah").innerText =
+    "Total: Rp " + total.toLocaleString("id-ID");
+}
+</script>
+
+</body>
+</html>
