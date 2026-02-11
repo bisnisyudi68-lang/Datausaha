@@ -37,8 +37,8 @@ header{background:#0d6efd;color:#fff;text-align:center;padding:15px}
 </div>
 
 <div id="harian" class="box active">
-  <h3>📅 Hari Ini</h3>
-  <div class="total">Rp <span id="harianTotal">0</span></div>
+  <h3>📅 Harian (Bulan Ini)</h3>
+  <div id="harianList"></div>
 </div>
 
 <div id="bulanan" class="box">
@@ -47,8 +47,8 @@ header{background:#0d6efd;color:#fff;text-align:center;padding:15px}
 </div>
 
 <div id="tahunan" class="box">
-  <h3>📆 Tahun Ini</h3>
-  <div class="total">Rp <span id="tahunanTotal">0</span></div>
+  <h3>📆 Rekap Tahunan</h3>
+  <div id="tahunanList"></div>
 </div>
 
 <script>
@@ -64,42 +64,66 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAP_R50frV13wh
 fetch(CSV_URL)
 .then(res => res.text())
 .then(csv => {
+
   const rows = csv.split("\n").slice(1);
 
   const now = new Date();
-  const today = now.toLocaleDateString("id-ID");
-  const year = now.getFullYear().toString();
+  const bulanSekarang = now.toLocaleString("id-ID",{month:"long"});
+  const tahunSekarang = now.getFullYear().toString();
 
-  let harian = 0;
-  let tahunan = 0;
-  let bulanan = {};
+  let harian = {};   // per tanggal (bulan ini)
+  let bulanan = {};  // SUDAH KEPAKAI
+  let tahunan = {};  // per tahun
 
   rows.forEach(r=>{
     const c = r.split(",");
 
-    const tgl = c[0];        // TANGGAL
-    const bln = c[2];        // BULAN
-    const thn = c[3];        // TAHUN
-    const total = parseInt(c[11]) || 0; // TOTAL HARGA
+    const tanggal = c[0];       // 01/01/2026
+    const hari = c[1];          // Senin
+    const bulan = c[2];         // Januari
+    const tahun = c[3];         // 2026
+    const total = parseInt(c[11]) || 0;
 
-    if(tgl === today) harian += total;
-    if(thn === year) tahunan += total;
+    // HARlAN (bulan berjalan)
+    if(bulan === bulanSekarang && tahun === tahunSekarang){
+      if(!harian[tanggal]) harian[tanggal] = {hari: hari, total:0};
+      harian[tanggal].total += total;
+    }
 
-    if(!bulanan[bln]) bulanan[bln] = 0;
-    bulanan[bln] += total;
+    // BULANAN
+    if(!bulanan[bulan]) bulanan[bulan] = 0;
+    bulanan[bulan] += total;
+
+    // TAHUNAN
+    if(!tahunan[tahun]) tahunan[tahun] = 0;
+    tahunan[tahun] += total;
   });
 
-  document.getElementById("harianTotal").innerText = harian.toLocaleString("id-ID");
-  document.getElementById("tahunanTotal").innerText = tahunan.toLocaleString("id-ID");
+  /* ===== TAMPILKAN HARIAN ===== */
+  let hHtml = "";
+  Object.keys(harian).sort().forEach(tgl=>{
+    hHtml += `<p>${tgl} ${harian[tgl].hari} : 
+      <strong>Rp ${harian[tgl].total.toLocaleString("id-ID")}</strong></p>`;
+  });
+  document.getElementById("harianList").innerHTML = hHtml || "<p>Tidak ada data</p>";
 
-  let html = "";
+  /* ===== TAMPILKAN BULANAN ===== */
+  let bHtml = "";
   for(const b in bulanan){
-    html += `<p>${b} : <strong>Rp ${bulanan[b].toLocaleString("id-ID")}</strong></p>`;
+    bHtml += `<p>${b} : <strong>Rp ${bulanan[b].toLocaleString("id-ID")}</strong></p>`;
   }
-  document.getElementById("bulananList").innerHTML = html;
+  document.getElementById("bulananList").innerHTML = bHtml;
+
+  /* ===== TAMPILKAN TAHUNAN ===== */
+  let tHtml = "";
+  for(const t in tahunan){
+    tHtml += `<p>${t} : <strong>Rp ${tahunan[t].toLocaleString("id-ID")}</strong></p>`;
+  }
+  document.getElementById("tahunanList").innerHTML = tHtml;
+
 })
 .catch(err=>{
-  alert("Gagal load data");
+  alert("Gagal ambil data");
   console.error(err);
 });
 </script>
