@@ -1,109 +1,68 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Upah Harian</title>
+<title>Upah Otomatis</title>
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f6f9;
-  margin: 0;
-  padding: 20px;
+  font-family: Arial;
+  background:#f4f6f9;
+  padding:20px;
 }
 
 .container {
-  max-width: 500px;
-  margin: auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  max-width:600px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-h2 {
-  text-align: center;
-}
-
-input, select, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-button {
-  background: #2e86de;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1b4f72;
-}
+h2 { text-align:center; }
 
 table {
-  width: 100%;
-  margin-top: 20px;
-  border-collapse: collapse;
-  font-size: 14px;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
 }
 
-table, th, td {
-  border: 1px solid #ddd;
-}
-
-th, td {
-  padding: 8px;
-  text-align: center;
+th,td {
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
 }
 
 .total {
-  font-weight: bold;
-  margin-top: 10px;
-  text-align: right;
+  margin-top:15px;
+  font-weight:bold;
+  text-align:right;
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
-  <h2>Upah Harian Karyawan</h2>
+<h2>Rekap Upah Harian</h2>
 
-  <input type="date" id="tanggal">
+<table>
+<thead>
+<tr>
+<th>Tanggal</th>
+<th>Nama</th>
+<th>Upah</th>
+</tr>
+</thead>
+<tbody id="dataUpah"></tbody>
+</table>
 
-  <select id="karyawan">
-    <option value="">Pilih Karyawan</option>
-    <option value="Soleh">Soleh</option>
-    <option value="Farhan">Farhan</option>
-    <option value="Yudi">Yudi</option>
-    <option value="Zaka">Zaka</option>
-  </select>
-
-  <button onclick="tambahUpah()">Tambah Upah</button>
-
-  <table id="tabelUpah">
-    <thead>
-      <tr>
-        <th>Tanggal</th>
-        <th>Nama</th>
-        <th>Upah</th>
-        <th>Hapus</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <div class="total" id="totalUpah">Total: Rp 0</div>
+<div class="total" id="totalUpah">Total: Rp 0</div>
 </div>
 
 <script>
-let total = 0;
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTAP_R50frV13whqx54ctjplc-8xhcN53rHEVk5mkhLeZE283xWnr6TdTBFr-KFymEiaYE_NWgGthpo/pub?gid=716772016&single=true&output=csv";
 
 function getUpah(nama) {
   if (nama === "Soleh") return 100000;
@@ -113,44 +72,37 @@ function getUpah(nama) {
   return 0;
 }
 
-function tambahUpah() {
-  const tanggal = document.getElementById("tanggal").value;
-  const nama = document.getElementById("karyawan").value;
+fetch(sheetURL)
+.then(response => response.text())
+.then(data => {
+  const rows = data.split("\n").slice(1); // skip header
+  let total = 0;
+  let html = "";
 
-  if (!tanggal || !nama) {
-    alert("Pilih tanggal dan karyawan dulu!");
-    return;
-  }
+  rows.forEach(row => {
+    const cols = row.split(",");
 
-  const upah = getUpah(nama);
-  total += upah;
+    const tanggal = cols[0];
+    const nama = cols[4]; // kolom KARYAWAN
 
-  const tabel = document.querySelector("#tabelUpah tbody");
-  const row = tabel.insertRow();
+    const upah = getUpah(nama);
 
-  row.insertCell(0).innerText = tanggal;
-  row.insertCell(1).innerText = nama;
-  row.insertCell(2).innerText = "Rp " + upah.toLocaleString("id-ID");
+    if (upah > 0) {
+      total += upah;
+      html += `
+        <tr>
+          <td>${tanggal}</td>
+          <td>${nama}</td>
+          <td>Rp ${upah.toLocaleString("id-ID")}</td>
+        </tr>
+      `;
+    }
+  });
 
-  const btnHapus = document.createElement("button");
-  btnHapus.innerText = "X";
-  btnHapus.style.background = "red";
-  btnHapus.style.color = "white";
-  btnHapus.onclick = function() {
-    total -= upah;
-    row.remove();
-    updateTotal();
-  };
-
-  row.insertCell(3).appendChild(btnHapus);
-
-  updateTotal();
-}
-
-function updateTotal() {
+  document.getElementById("dataUpah").innerHTML = html;
   document.getElementById("totalUpah").innerText =
     "Total: Rp " + total.toLocaleString("id-ID");
-}
+});
 </script>
 
 </body>
