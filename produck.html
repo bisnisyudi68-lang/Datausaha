@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Toko Siap Antar</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body{font-family:Arial;background:#f2f2f2;padding:15px;}
+.card{background:white;padding:12px;margin-bottom:10px;
+border-radius:8px;box-shadow:0 0 5px rgba(0,0,0,0.1);}
+#map{height:260px;margin-top:10px;}
+button{width:100%;padding:12px;margin-top:8px;
+background:green;color:white;border:none;border-radius:5px;}
+.harga{color:#0a7a00;font-weight:bold;}
+input{width:100%;padding:8px;margin-bottom:8px;}
+hr{margin:10px 0;}
+</style>
+</head>
+<body>
+
+<h2>🛒 TOKO SIAP ANTAR</h2>
+
+<input id="waPembeli"
+placeholder="Nomor WhatsApp Anda (08xxxx)">
+
+<input id="cari"
+placeholder="Cari nama / kode..."
+onkeyup="filterProduk()">
+
+<div id="hasil"></div>
+
+<h3>Pilih Lokasi Rumah</h3>
+<div id="map"></div>
+
+<button onclick="pakaiGPS()">📍 Gunakan Lokasi Saya</button>
+
+<div class="card">
+<b>🧾 RINGKASAN</b><br><br>
+Jumlah Item : <span id="jmlItem">0</span><br>
+Total Barang : Rp <span id="totalBarang">0</span><br>
+Estimasi Ongkir : Rp <span id="estimasiOngkir">7000</span><br>
+<hr>
+<b>TOTAL BAYAR : Rp <span id="totalBayar">0</span></b>
+</div>
+
+<button onclick="proses()">Setuju & Kirim ke WhatsApp</button>
+
+<script>
+
+// ================== GOOGLE SHEET ==================
+const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
+const tabProduk="Stock Konter";
+
+let dataProduk=[];
+let produkDipilih={};
+
+fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tabProduk)}`)
+.then(r=>r.text())
+.then(t=>{
+ const json=JSON.parse(t.substring(47).slice(0,-2));
+ const rows=json.table.rows;
+
+ dataProduk=rows
+ .filter(r=>r.c[0] && r.c[1])
+ .map(r=>({
+   kode:r.c[0]?.v||"",
+   nama:r.c[1]?.v||"",
+   harga:parseInt(r.c[3]?.v)||0,
+   stok:parseInt(r.c[6]?.v)||0
+ }));
+
+ tampilProduk(dataProduk);
+});
+
+// ================== TAMPIL PRODUK ==================
+function tampilProduk(list){
+ hasil.innerHTML="";
+ list.forEach(p=>{
+  let checked = produkDipilih[p.kode] ? "checked" : "";
+
+  hasil.innerHTML+=`
+  <div class="card">
+   <label>
+   <input type="checkbox"
+   ${checked}
+   onchange="toggleProduk('${p.kode}',this)"
+   ${p.stok<=0?"disabled":""}>
+   <b>${p.kode}</b><br>
+   ${p.nama}<br>
+   <span class="harga">Rp ${p.harga.toLocaleString()}</span><br>
+   ${p.stok>0?"Stok: "+p.stok:"<span style='color:red'>Habis</span>"}
+   </label>
+  </div>`;
+ });
+}
+
+function toggleProduk(kode,el){
+ let produk=dataProduk.find(p=>p.kode===kode);
+ if(el.checked){
+  produkDipilih[kode]=produk;
+ }else{
+  delete produkDipilih[kode];
+ }
+ updateRingkasan();
+}
+
+function filterProduk(){
+ let q=cari.value.toLowerCase();
+ tampilProduk(dataProduk.filter(x=>
+  x.nama.toLowerCase().includes(q)||
+  x.kode.toLowerCase().includes(q)
+ ));
+}
+
+function ambilProduk(){
+ let total=0, daftar="";
+ Object.values(produkDipilih).forEach(p=>{
+  total+=p.harga;
+  daftar+=p.nama+" - Rp "+p.harga.toLocaleString()+"\n";
+ });
+ return {total,daftar};
+}
+
+// ================== MAP ==================
+const tokoLat=-6.883831;
+const tokoLng=108.302788;
+
+let tujuanLat=null, tujuanLng=null;
+
+var map=L.map('map').setView([tokoLat,tokoLng],16);
+
+L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+{attribution:'Tiles © Esri'}
+).addTo(map);
+
+L.tileLayer(
+'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
+{subdomains:'abcd'}
+).addTo(map);
+
+L.marker([tokoLat,tokoLng]).addTo(map)
+.bindPopup("Lokasi Toko").openPopup();
+
+let marker;
+
+map.on('click',function(e){
+ tujuanLat=e.latlng.lat;
+ tujuanLng=e.latlng.lng;
+ if(marker) map.removeLayer(marker);
+ marker=L.marker([tujuanLat,tujuanLng])
+ .addTo(map).bindPopup("Lokasi Rumah").openPopup();
+});
+
+function pakaiGPS(){
+ navigator.geolocation.getCurrentPosition(pos=>{
+  tujuanLat=pos.coords.latitude;
+  tujuanLng=pos.coords.longitude;
+  map.setView([tujuanLat,tujuanLng],17);
+  if(marker) map.removeLayer(marker);
+  marker=L.marker([tujuanLat,tujuanLng])
+  .addTo(map).bindPopup("Lokasi Anda").openPopup();
+ },()=>alert("Aktifkan izin lokasi"));
+}
+
+// ================== ONGKIR ==================
+const kmPerLiter=50;
+const hargaPerLiter=10000;
+const biayaJasa=3000;
+const biayaPerawatan=2000;
+const minimumOngkir=7000;
+
+function updateRingkasan(){
+ let produk=ambilProduk();
+ let jumlah=Object.keys(produkDipilih).length;
+ document.getElementById("jmlItem").innerText=jumlah;
+ document.getElementById("totalBarang").innerText=
+ produk.total.toLocaleString();
+ document.getElementById("totalBayar").innerText=
+ produk.total.toLocaleString();
+}
+
+async function proses(){
+
+ let noWaPembeli=document.getElementById("waPembeli").value.trim();
+ if(noWaPembeli===""){alert("Masukkan nomor WA dulu");return;}
+
+ let produk=ambilProduk();
+ if(produk.total===0 || tujuanLat===null){
+  alert("Pilih produk dan lokasi dulu!");
+  return;
+ }
+
+ let r=await fetch(
+ `https://router.project-osrm.org/route/v1/driving/${tokoLng},${tokoLat};${tujuanLng},${tujuanLat}?overview=false`
+ );
+ let data=await r.json();
+ let jarakKm=data.routes[0].distance/1000;
+
+ let bensin=jarakKm/kmPerLiter;
+ let biayaBBM=(bensin*hargaPerLiter)*2;
+ let ongkir=biayaBBM+biayaJasa+biayaPerawatan;
+ if(ongkir<minimumOngkir) ongkir=minimumOngkir;
+ ongkir=Math.ceil(ongkir/1000)*1000;
+
+ let totalBayar=produk.total+ongkir;
+ let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
+
+ let daftarFormatted="";
+ let nomor=1;
+ Object.values(produkDipilih).forEach(p=>{
+  daftarFormatted+=
+  nomor+". "+p.nama+
+  "%0A   Rp "+p.harga.toLocaleString()+
+  "%0A--------------------------------%0A";
+  nomor++;
+ });
+
+ let pesan=
+ "══════════════════════%0A"+
+ "      TOKO SIAP ANTAR%0A"+
+ "══════════════════════%0A%0A"+
+ "📌 PESANAN BARU%0A%0A"+
+ "👤 Nomor Pembeli:%0A"+noWaPembeli+
+ "%0A%0A🛒 DETAIL PRODUK%0A--------------------------------%0A"+
+ daftarFormatted+
+ "%0A📊 RINGKASAN%0A--------------------------------%0A"+
+ "Jumlah Item : "+Object.keys(produkDipilih).length+
+ "%0ATotal Barang : Rp"+produk.total.toLocaleString()+
+ "%0AJarak : "+jarakKm.toFixed(1)+" km"+
+ "%0AOngkir : Rp"+ongkir.toLocaleString()+
+ "%0A--------------------------------%0A"+
+ "TOTAL BAYAR : Rp"+totalBayar.toLocaleString()+
+ "%0A--------------------------------%0A%0A"+
+ "📍 Lokasi:%0A"+linkMaps+
+ "%0A%0A══════════════════════";
+
+ window.open("https://wa.me/6282319264646?text="+pesan);
+}
+
+</script>
+</body>
+</html>
