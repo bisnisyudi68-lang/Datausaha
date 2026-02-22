@@ -1,203 +1,133 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teknisi Ponsel Maja</title>
+<title>A YUDI THEA | Servis Handphone</title>
 
 <style>
-:root{
-  --primary:#2aa84a;
-  --bg:#f4f6f8;
-  --card:#ffffff;
-  --text:#222;
-  --muted:#666;
-}
-
-*{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
+  background:#f4f6f9;
 }
 
-/* HEADER */
+/* ===== HEADER ===== */
 .header{
-  background:#fff;
-  padding:20px 16px;
+  background:#0d6efd;
+  color:white;
   text-align:center;
-  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  padding:25px 15px;
 }
-.baner {
-  width: 100%;
-  max-height: 370px;     /* BATASI TINGGI */
-  overflow: hidden;     /* POTONG SISA GAMBAR */
-}
-
-.baner img {
-  width: 100%;
-  height: 370px;        /* SAMAKAN DENGAN BANNER */
-  object-fit: cover;    /* FULL TANPA MELAR */
-  border-radius: 0;
-  display: block;
-}
-.header h2{
-  margin:5px 0;
-}
-.header p{
-  margin:0;
-  font-size:14px;
-  color:var(--muted);
-}
-
-/* SECTION */
-.section{
-  background:#fff;
-  margin:14px;
-  padding:16px;
-  border-radius:14px;
-  box-shadow:0 2px 6px rgba(0,0,0,.08);
-}
-.section h3{
-  margin-top:0;
+.header img{
+  width:90px;
   margin-bottom:10px;
 }
-
-/* MENU */
-.menu{
-  margin-top:10px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+.header h1{
+  margin:0;
+  font-size:22px;
+}
+.header p{
+  margin:5px 0 0 0;
+  font-size:14px;
 }
 
-.menu-item{
-  background:#fff;
-  border-radius:14px;
-  padding:14px;
-  box-shadow:0 3px 8px rgba(0,0,0,.12);
-  display:flex;
-  align-items:center;
-  gap:10px;
-  cursor:pointer;
+/* ===== HERO ===== */
+.hero{
+  background:white;
+  padding:25px 15px;
+  text-align:center;
+}
+.hero h2{
+  margin:0;
+  color:#0d6efd;
+}
+.hero p{
+  color:#555;
+  margin-top:8px;
+}
+
+/* ===== BUTTON ===== */
+.btn{
+  display:inline-block;
+  margin-top:15px;
+  padding:12px 20px;
+  background:#198754;
+  color:white;
+  text-decoration:none;
+  border-radius:5px;
   font-weight:bold;
 }
 
-.icon{
-  width:38px;
-  height:38px;
-  border-radius:10px;
-  background:var(--primary);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
+/* ===== SECTION ===== */
+.section{
+  padding:20px 15px;
+}
+.card{
+  background:white;
+  padding:15px;
+  border-radius:8px;
+  margin-bottom:10px;
+  box-shadow:0 0 5px rgba(0,0,0,0.1);
+}
+.harga{
+  color:#198754;
+  font-weight:bold;
 }
 
-/* FOOTER */
+/* ===== FOOTER ===== */
 .footer{
+  background:#222;
+  color:white;
   text-align:center;
-  font-size:12px;
-  color:#777;
-  margin:20px 0;
+  padding:15px;
+  font-size:13px;
 }
 </style>
 </head>
-
 <body>
 
-<!-- HEADER + LOGO -->
+<!-- ===== HEADER ===== -->
 <div class="header">
-  <div class="baner">
-  <img src="baner.jpg" alt="baner Teknisi Ponsel Maja">
-</div>
-  <h2>A_YUDI_THEA</h2>
-  <p>Servis Handphone SSofware & Hardware</p>
+  <img src="logo.png" alt="Logo Toko">
+  <h1>A YUDI THEA</h1>
+  <p>Servis Handphone Accessories & Sparepart</p>
 </div>
 
-
-
-<!-- MENU -->
-<div class="section">
-  <h3>📱 Menu Utama</h3>
-
-<div class="menu-item" onclick="go('konter.html')">
-  <div class="icon">🖥</div>
-  Stock Konter
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <h2>🔧 Servis Cepat & Sparepart Berkualitas</h2>
+  <p>LCD • Baterai • IC • Aksesoris • Perbaikan HP</p>
+  <a href="#produk" class="btn">Lihat Produk</a>
 </div>
 
-<div class="menu-item" onclick="go('deris.html')">
-  <div class="icon">⚙️</div>
-  Belanja Lcd
-</div>
-  <div class="menu-item" onclick="go('dashboard.html')">
-  <div class="icon">🧰</div>
-  Data Keuangan
+<!-- ===== PRODUK ===== -->
+<div class="section" id="produk">
+  <h3>Produk Unggulan</h3>
+
+  <div class="card">
+    LCD iPhone / Android
+    <div class="harga">Harga Mulai Rp 150.000</div>
+  </div>
+
+  <div class="card">
+    Baterai Original
+    <div class="harga">Harga Mulai Rp 75.000</div>
+  </div>
+
+  <div class="card">
+    Sparepart & IC
+    <div class="harga">Tersedia Lengkap</div>
+  </div>
+
 </div>
 
-<div class="menu-item" onclick="go('upah.html')">
-  <div class="icon">🛒</div>
-  Upah Pekerja
-</div>
-
-<div class="menu-item" onclick="go('sop.html')">
-  <div class="icon">📘</div>
-  SOP Teknisi
-</div>
-
-<div class="menu-item" onclick="go('chat.html')">
-  <div class="icon">💬</div>
-  Chat
-</div>
-</div>
-
-<!-- FOOTER -->
+<!-- ===== FOOTER ===== -->
 <div class="footer">
-  © Komunitas Teknisi Majalengka
+  © 2026 A YUDI THEA  
+  <br>
+  Pecinanlama | WA: 082319264646
 </div>
 
-<script>
-function go(p){
-  location.href = p;
-}
-</script>
-<audio id="bgMusic" loop>
-  <source src="maja.mp3" type="audio/mpeg">
-</audio>
-
-<button id="musicBtn"
-  style="
-    position:fixed;
-    top:10px;
-    left:15px;
-    border:none;
-    border-radius:50%;
-    width:38px;
-    height:38px;
-    background:#25d366;
-    color:white;
-    font-size:16px;
-    z-index:9999;
-    opacity:0.85;
-  ">
-  ▶️
-</button>
-<script>
-const music = document.getElementById("bgMusic");
-const btn = document.getElementById("musicBtn");
-
-btn.addEventListener("click", function () {
-  if (music.paused) {
-    music.play();
-    btn.innerHTML = "⏸️";
-  } else {
-    music.pause();
-    btn.innerHTML = "▶️";
-  }
-});
-</script>
 </body>
 </html>
