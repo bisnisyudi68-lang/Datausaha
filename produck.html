@@ -262,12 +262,17 @@ function gunakanLokasi(){
 }
 
 function hitungOngkir(){
- let jarak=Math.sqrt(
-  Math.pow(tujuanLat-tokoLat,2)+
-  Math.pow(tujuanLng-tokoLng,2)
- )*111;
 
- ongkirFix=Math.round(jarak*2000);
+ let jarak = map.distance(
+   [tokoLat, tokoLng],
+   [tujuanLat, tujuanLng]
+ ) / 1000; // km
+
+ ongkirFix = Math.round(jarak * 2000);
+
+ if(ongkirFix < 10000){
+   ongkirFix = 10000; // minimal ongkir
+ }
 }
 
 // ================= PROSES WA =================
@@ -286,7 +291,7 @@ function proses(){
  let no=1;
 
  Object.values(produkDipilih).forEach(p=>{
-  let subtotal=p.harga*p.qty;
+  let subtotal=Math.round(p.harga*p.qty);
   total+=subtotal;
   totalItem+=p.qty;
 
