@@ -74,7 +74,15 @@ input{padding:10px;width:100%;box-sizing:border-box;border-radius:6px;border:1px
 <div id="hasil"></div>
 
 <h3 style="padding:10px;margin:0">📍 Pilih Lokasi Rumah</h3>
+
 <div id="map"></div>
+
+<div style="padding:10px">
+<button onclick="pakaiGPS()" 
+style="background:#1976d2;">
+📡 Gunakan Lokasi Saya
+</button>
+</div>
 
 <div style="padding:10px">
 <input id="waPembeli" placeholder="Nomor WhatsApp Anda (08xxxx)">
@@ -199,7 +207,31 @@ map.on('click',function(e){
  .bindPopup("Lokasi Rumah").openPopup();
  hitungOngkir();
 });
+function pakaiGPS(){
+ if(!navigator.geolocation){
+   alert("GPS tidak didukung di perangkat ini");
+   return;
+ }
 
+ navigator.geolocation.getCurrentPosition(
+  function(pos){
+    tujuanLat=pos.coords.latitude;
+    tujuanLng=pos.coords.longitude;
+
+    map.setView([tujuanLat,tujuanLng],16);
+
+    if(marker) map.removeLayer(marker);
+
+    marker=L.marker([tujuanLat,tujuanLng]).addTo(map)
+    .bindPopup("Lokasi Anda").openPopup();
+
+    hitungOngkir();
+  },
+  function(){
+    alert("Aktifkan izin lokasi di browser");
+  }
+ );
+}
 // ================= ONGKIR =================
 const kmPerLiter=50;
 const hargaPerLiter=15000;
