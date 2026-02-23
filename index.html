@@ -10,110 +10,144 @@ body{
   margin:0;
   font-family:Arial, sans-serif;
   background:#f4f6f9;
+  color:#333;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 .header{
-  background:#0d6efd;
+  background:linear-gradient(135deg,#0d6efd,#198754);
   color:white;
   text-align:center;
-  padding:25px 15px;
-}
-.header img{
-  width:90px;
-  margin-bottom:10px;
-}
-.header h1{
-  margin:0;
-  font-size:22px;
-}
-.header p{
-  margin:5px 0 0 0;
-  font-size:14px;
+  padding:40px 20px;
 }
 
-/* ===== HERO ===== */
-.hero{
-  background:white;
-  padding:25px 15px;
-  text-align:center;
+.header img{
+  width:100px;
+  margin-bottom:15px;
 }
+
+.header h1{
+  margin:0;
+  font-size:26px;
+}
+
+.header p{
+  margin:8px 0 0;
+  font-size:14px;
+  opacity:0.9;
+}
+
+/* HERO */
+.hero{
+  padding:30px 20px;
+  text-align:center;
+  background:white;
+}
+
 .hero h2{
   margin:0;
   color:#0d6efd;
 }
+
 .hero p{
-  color:#555;
-  margin-top:8px;
+  margin:10px 0;
+  color:#666;
 }
 
 .promo{
   background:#198754;
   color:white;
-  padding:12px;
-  border-radius:6px;
-  margin-top:15px;
+  padding:15px;
+  border-radius:12px;
   font-weight:bold;
+  margin-top:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* ===== BUTTON ===== */
 .btn{
   display:inline-block;
-  margin-top:15px;
-  padding:12px 20px;
-  background:#0d6efd;
+  margin-top:20px;
+  padding:14px 25px;
+  background:linear-gradient(45deg,#0d6efd,#2563eb);
   color:white;
   text-decoration:none;
-  border-radius:5px;
+  border-radius:12px;
   font-weight:bold;
+  box-shadow:0 6px 15px rgba(0,0,0,0.2);
+  transition:0.3s;
 }
 
-/* ===== SECTION ===== */
-.section{
-  padding:20px 15px;
+.btn:hover{
+  transform:scale(1.05);
 }
+
+/* SECTION */
+.section{
+  padding:30px 20px;
+}
+
+.section h3{
+  margin-top:0;
+}
+
 .card{
   background:white;
-  padding:15px;
-  border-radius:8px;
-  margin-bottom:10px;
-  box-shadow:0 0 5px rgba(0,0,0,0.1);
-}
-.harga{
-  color:#198754;
-  font-weight:bold;
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.08);
 }
 
-/* ===== MAP ===== */
+/* MAP */
 .map{
   width:100%;
-  height:250px;
-  border-radius:8px;
+  height:260px;
+  border-radius:15px;
 }
 
-/* ===== FOOTER ===== */
+/* FOOTER */
 .footer{
-  background:#222;
+  background:#111;
   color:white;
   text-align:center;
-  padding:15px;
+  padding:20px;
   font-size:13px;
+  margin-top:30px;
+}
+
+/* FLOATING WA */
+.wa-float{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#25d366;
+  color:white;
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  text-decoration:none;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
 }
 </style>
 </head>
+
 <body>
 
 <!-- HEADER -->
 <div class="header">
-  <img src="baner.jpg" alt="Logo Toko">
+  <!-- Nanti ganti logo.jpg -->
+  <img src="logo.jpg" alt="Logo Toko">
   <h1>A YUDI THEA</h1>
-  <p>Servis Handphone Accessories & Sparepart</p>
+  <p>Servis Handphone • Accessories • Sparepart</p>
 </div>
 
 <!-- HERO -->
 <div class="hero">
-  <h2>🔧 Jual LCD & Sparepart Berkualitas</h2>
-  <p>LCD • Baterai • IC • Aksesoris </p>
+  <h2>🔧 Spesialis LCD, Baterai & IC Handphone</h2>
+  <p>Ready Stock • Harga Grosir • Bergaransi</p>
 
   <div class="promo">
     🚚 Pesanan Anda Siap Kami Antar Dalam 1 Jam*
@@ -125,28 +159,36 @@ body{
 <!-- LOKASI -->
 <div class="section">
   <h3>📍 Lokasi Toko Kami</h3>
-
   <div class="card">
-    <iframe 
+
+    <iframe
       class="map"
       src="https://www.google.com/maps?q=-6.883831,108.302788&output=embed">
     </iframe>
 
     <br><br>
+
     <a href="https://www.google.com/maps?q=-6.883831,108.302788"
        target="_blank"
        class="btn">
        Buka di Google Maps
     </a>
+
   </div>
 </div>
 
 <!-- FOOTER -->
 <div class="footer">
-  © 2026 A YUDI THEA  
-  <br>
+  © 2026 A YUDI THEA <br>
   Pecinanlama | WA: 082319264646
 </div>
+
+<!-- FLOAT WA -->
+<a href="https://wa.me/6282319264646"
+   class="wa-float"
+   target="_blank">
+   💬
+</a>
 
 </body>
 </html>
