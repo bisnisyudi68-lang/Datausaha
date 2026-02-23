@@ -222,7 +222,10 @@ function updateCart(){
 // ================= WA =================
 function proses(){
 
+ function proses(){
+
  let noWa=document.getElementById("waPembeli").value.trim();
+
  if(noWa=="" || !tujuanLat || Object.keys(produkDipilih).length==0){
   alert("Lengkapi data dulu!");
   return;
@@ -237,8 +240,12 @@ function proses(){
   let subtotal=p.harga*p.qty;
   total+=subtotal;
   totalItem+=p.qty;
-  detail+=no+". "+p.nama+" x"+p.qty+
-  " - Rp "+subtotal.toLocaleString()+"%0A";
+
+  detail+=
+  no+". "+p.nama+
+  " x"+p.qty+
+  " - Rp "+subtotal.toLocaleString()+
+  "%0A";
   no++;
  });
 
@@ -246,15 +253,26 @@ function proses(){
  let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
 
  let pesan=
- "📦 PESANAN BARU%0A%0A"+
+ "============================%0A"+
+ "📦 PESANAN BARU%0A"+
+ "============================%0A%0A"+
+ "👤 Nomor Pembeli:%0A"+noWa+
+ "%0A%0A🛒 DETAIL PRODUK%0A"+
+ "----------------------------%0A"+
  detail+
- "%0ATotal Item: "+totalItem+
- "%0ATotal Bayar: Rp"+totalBayar.toLocaleString()+
- "%0A%0ALokasi:%0A"+linkMaps;
+ "%0A📊 RINGKASAN%0A"+
+ "----------------------------%0A"+
+ "Jumlah Produk : "+Object.keys(produkDipilih).length+" Jenis%0A"+
+ "Total Item : "+totalItem+" Pcs%0A"+
+ "Total Barang : Rp"+total.toLocaleString()+"%0A"+
+ "Ongkir : Rp"+ongkirFix.toLocaleString()+"%0A"+
+ "----------------------------%0A"+
+ "TOTAL BAYAR : Rp"+totalBayar.toLocaleString()+
+ "%0A%0A📍 Lokasi:%0A"+linkMaps+
+ "%0A============================";
 
  window.open("https://wa.me/6282319264646?text="+pesan);
 }
-
 </script>
 </body>
 </html>
