@@ -2,231 +2,280 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Toko Siap Antar</title>
+<title>TOKO SIAP ANTAR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body{font-family:Arial;margin:0;background:#f5f5f5;padding-bottom:120px}
-h2{padding:15px;margin:0;background:#0a8f3c;color:white}
-input{padding:10px;width:100%;box-sizing:border-box;border-radius:6px;border:1px solid #ddd;margin:10px}
+body{
+ font-family:Arial;
+ margin:0;
+ background:#f2f2f2;
+}
+
+header{
+ background:#15803d;
+ color:white;
+ padding:15px;
+ text-align:center;
+ font-size:20px;
+ font-weight:bold;
+}
+
+input{
+ width:95%;
+ padding:10px;
+ margin:10px;
+ border-radius:8px;
+ border:1px solid #ccc;
+}
+
 .card{
- background:#fff;
+ background:white;
  margin:10px;
  padding:12px;
- border-radius:10px;
- box-shadow:0 2px 6px rgba(0,0,0,0.1)
+ border-radius:12px;
+ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
-.harga{color:#0a8f3c;font-weight:bold}
-.qty-box{display:flex;align-items:center;gap:10px;margin-top:10px}
-.qty-btn{
- width:32px;height:32px;border:none;
- background:#0a8f3c;color:white;
- border-radius:6px;font-weight:bold
+
+.harga{
+ color:#15803d;
+ font-weight:bold;
 }
-#map{height:220px;margin:10px;border-radius:10px}
-.cart{
- position:fixed;bottom:0;left:0;right:0;
- background:white;padding:12px;
- box-shadow:0 -2px 10px rgba(0,0,0,0.2);
+
+button{
+ padding:6px 12px;
+ border:none;
+ border-radius:6px;
+ cursor:pointer;
 }
-.cart button{
- width:100%;padding:12px;
- background:#0a8f3c;color:white;
- border:none;border-radius:8px;font-weight:bold;
+
+.btnTambah{
+ background:#e5e5e5;
 }
+
+.qtyBox{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ margin-top:8px;
+}
+
+.qtyBtn{
+ background:#15803d;
+ color:white;
+ width:35px;
+ height:35px;
+}
+
+#map{
+ height:250px;
+ margin:10px;
+ border-radius:12px;
+}
+
+.checkout{
+ position:fixed;
+ bottom:0;
+ width:100%;
+ background:#15803d;
+ color:white;
+ padding:15px;
+ text-align:center;
+ font-weight:bold;
+}
+
 </style>
 </head>
+
 <body>
 
-<h2>🛒 TOKO SIAP ANTAR</h2>
+<header>🛒 TOKO SIAP ANTAR</header>
 
-<input id="cari" placeholder="Cari produk..." onkeyup="filterProduk()">
-<div id="hasil"></div>
+<input type="text" id="cari" placeholder="Cari produk..." onkeyup="renderProduk()">
 
-<h3 style="padding:10px;margin:0">📍 Pilih Lokasi Rumah</h3>
+<div id="listProduk"></div>
+
+<h3 style="margin-left:10px;">📍 Pilih Lokasi Rumah</h3>
 <div id="map"></div>
-<button onclick="pakaiGPS()" style="margin:10px;background:#1976d2;color:white;border:none;padding:10px;border-radius:6px;width:calc(100% - 20px)">
+
+<button onclick="gunakanLokasi()" style="width:95%;margin:10px;background:#2563eb;color:white;">
 📡 Gunakan Lokasi Saya
 </button>
 
-<input id="waPembeli" placeholder="Nomor WhatsApp Anda (08xxxx)">
+<input type="text" id="waPembeli" placeholder="Nomor WhatsApp Anda (08xxxx)">
 
-<div class="cart">
-<b id="cartInfo">0 Produk | 0 Pcs | Rp0</b>
-<button onclick="proses()">Checkout & Kirim WhatsApp</button>
+<div class="checkout" onclick="proses()">
+<span id="ringkasan">0 Produk | 0 Pcs | Rp0</span><br>
+Checkout & Kirim WhatsApp
 </div>
 
 <script>
 
-// ================= DATA =================
+// ================= GOOGLE SHEET =================
 const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
-const tabProduk="Stock Konter";
+const sheetName="Stock Konter";
 
-let dataProduk=[];
+let semuaProduk=[];
 let produkDipilih={};
 
-fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tabProduk)}`)
-.then(r=>r.text())
-.then(t=>{
- const json=JSON.parse(t.substring(47).slice(0,-2));
- const rows=json.table.rows;
-
- dataProduk=rows
- .filter(r=>r.c[0] && r.c[1])
- .map(r=>({
+fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`)
+.then(res=>res.text())
+.then(data=>{
+ let json=JSON.parse(data.substring(47).slice(0,-2));
+ semuaProduk=json.table.rows.map(r=>({
    kode:r.c[0]?.v||"",
    nama:r.c[1]?.v||"",
-   harga:parseInt(r.c[3]?.v)||0
+   harga:r.c[3]?.v||0
  }));
-
- tampilProduk(dataProduk);
+ renderProduk();
 });
 
-// ================= TAMPIL =================
-function tampilProduk(list){
- hasil.innerHTML="";
- list.forEach(p=>{
-  hasil.innerHTML+=`
-   <div class="card" id="card-${p.kode}">
-     <b>${p.nama}</b><br>
-     <small>${p.kode}</small><br>
-     <span class="harga">Rp ${p.harga.toLocaleString()}</span>
-     <div id="action-${p.kode}"></div>
-   </div>
-  `;
-  renderAction(p.kode);
+// ================= RENDER PRODUK =================
+function renderProduk(){
+ let keyword=document.getElementById("cari").value.toLowerCase();
+ let list=document.getElementById("listProduk");
+ list.innerHTML="";
+
+ semuaProduk
+ .filter(p=>p.nama.toLowerCase().includes(keyword))
+ .forEach(p=>{
+
+   let div=document.createElement("div");
+   div.className="card";
+
+   let qty=produkDipilih[p.kode]?.qty||0;
+
+   div.innerHTML=`
+   <b>${p.nama}</b><br>
+   ${p.kode}<br>
+   <span class="harga">Rp ${p.harga.toLocaleString()}</span>
+   `;
+
+   if(qty==0){
+     let btn=document.createElement("button");
+     btn.className="btnTambah";
+     btn.innerText="+ Tambah";
+     btn.onclick=()=>tambahProduk(p);
+     div.appendChild(btn);
+   }else{
+     let box=document.createElement("div");
+     box.className="qtyBox";
+     box.innerHTML=`
+      <button class="qtyBtn" onclick="kurang('${p.kode}')">-</button>
+      <span>${qty}</span>
+      <button class="qtyBtn" onclick="tambah('${p.kode}')">+</button>
+     `;
+     div.appendChild(box);
+   }
+
+   list.appendChild(div);
  });
+
+ updateRingkasan();
 }
 
-function renderAction(kode){
- let action=document.getElementById("action-"+kode);
- let p=produkDipilih[kode];
+// ================= TAMBAH / KURANG =================
+function tambahProduk(p){
+ produkDipilih[p.kode]={...p, qty:1};
+ renderProduk();
+}
 
- if(!p){
-  action.innerHTML=`<button onclick="tambahProduk('${kode}')">+ Tambah</button>`;
- }else{
-  action.innerHTML=`
-   <div class="qty-box">
-    <button class="qty-btn" onclick="kurangProduk('${kode}')">-</button>
-    <b>${p.qty}</b>
-    <button class="qty-btn" onclick="tambahProduk('${kode}')">+</button>
-   </div>
-  `;
+function tambah(kode){
+ produkDipilih[kode].qty++;
+ renderProduk();
+}
+
+function kurang(kode){
+ produkDipilih[kode].qty--;
+ if(produkDipilih[kode].qty<=0){
+  delete produkDipilih[kode];
  }
+ renderProduk();
 }
 
-// ================= TAMBAH/KURANG =================
-function tambahProduk(kode){
- let produk=dataProduk.find(p=>p.kode===kode);
- if(!produkDipilih[kode]){
-  produkDipilih[kode]={...produk,qty:1};
- }else{
-  produkDipilih[kode].qty++;
- }
- renderAction(kode);
- updateCart();
-}
+// ================= RINGKASAN =================
+function updateRingkasan(){
+ let total=0;
+ let totalItem=0;
 
-function kurangProduk(kode){
- if(produkDipilih[kode]){
-  produkDipilih[kode].qty--;
-  if(produkDipilih[kode].qty<=0){
-   delete produkDipilih[kode];
-  }
- }
- renderAction(kode);
- updateCart();
-}
+ Object.values(produkDipilih).forEach(p=>{
+   total+=p.harga*p.qty;
+   totalItem+=p.qty;
+ });
 
-// ================= FILTER =================
-function filterProduk(){
- let q=cari.value.toLowerCase();
- tampilProduk(dataProduk.filter(x=>
-  x.nama.toLowerCase().includes(q)||
-  x.kode.toLowerCase().includes(q)
- ));
+ document.getElementById("ringkasan").innerText=
+ Object.keys(produkDipilih).length+
+ " Produk | "+
+ totalItem+
+ " Pcs | Rp"+
+ total.toLocaleString();
 }
 
 // ================= MAP =================
-const tokoLat=-6.883831;
-const tokoLng=108.302788;
+const tokoLat=-6.7995;
+const tokoLng=108.3441;
 
-let tujuanLat=null, tujuanLng=null;
+let tujuanLat=null;
+let tujuanLng=null;
 let ongkirFix=0;
 
 var map=L.map('map').setView([tokoLat,tokoLng],15);
 
 L.tileLayer(
- 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
 ).addTo(map);
 
 L.marker([tokoLat,tokoLng]).addTo(map)
-.bindPopup("Lokasi Toko");
+.bindPopup("Lokasi Toko").openPopup();
 
 let marker;
 
 map.on('click',function(e){
  tujuanLat=e.latlng.lat;
  tujuanLng=e.latlng.lng;
+
  if(marker) map.removeLayer(marker);
- marker=L.marker([tujuanLat,tujuanLng]).addTo(map)
- .bindPopup("Lokasi Rumah");
+
+ marker=L.marker([tujuanLat,tujuanLng])
+ .addTo(map)
+ .bindPopup("Lokasi Rumah").openPopup();
+
  hitungOngkir();
 });
 
-function pakaiGPS(){
+function gunakanLokasi(){
  navigator.geolocation.getCurrentPosition(pos=>{
-  tujuanLat=pos.coords.latitude;
-  tujuanLng=pos.coords.longitude;
-  map.setView([tujuanLat,tujuanLng],16);
-  if(marker) map.removeLayer(marker);
-  marker=L.marker([tujuanLat,tujuanLng]).addTo(map)
-  .bindPopup("Lokasi Anda");
-  hitungOngkir();
+   tujuanLat=pos.coords.latitude;
+   tujuanLng=pos.coords.longitude;
+
+   if(marker) map.removeLayer(marker);
+
+   marker=L.marker([tujuanLat,tujuanLng])
+   .addTo(map)
+   .bindPopup("Lokasi Rumah").openPopup();
+
+   hitungOngkir();
  });
 }
 
-// ================= ONGKIR =================
-async function hitungOngkir(){
- let r=await fetch(
- `https://router.project-osrm.org/route/v1/driving/${tokoLng},${tokoLat};${tujuanLng},${tujuanLat}?overview=false`
- );
- let data=await r.json();
- let jarakKm=data.routes[0].distance/1000;
+function hitungOngkir(){
+ let jarak=Math.sqrt(
+  Math.pow(tujuanLat-tokoLat,2)+
+  Math.pow(tujuanLng-tokoLng,2)
+ )*111;
 
- let ongkir=10000 + (jarakKm*2000);
- ongkirFix=Math.ceil(ongkir/1000)*1000;
- updateCart();
+ ongkirFix=Math.round(jarak*2000);
 }
 
-// ================= CART =================
-function updateCart(){
- let total=0;
- let totalItem=0;
- let jumlahProduk=Object.keys(produkDipilih).length;
-
- Object.values(produkDipilih).forEach(p=>{
-  total+=p.harga*p.qty;
-  totalItem+=p.qty;
- });
-
- let totalBayar=total+ongkirFix;
-
- document.getElementById("cartInfo").innerText=
- jumlahProduk+" Produk | "+totalItem+" Pcs | Rp"+totalBayar.toLocaleString();
-}
-
-// ================= WA =================
+// ================= PROSES WA =================
 function proses(){
-
- function proses(){
 
  let noWa=document.getElementById("waPembeli").value.trim();
 
- if(noWa=="" || !tujuanLat || Object.keys(produkDipilih).length==0){
+ if(noWa==""||!tujuanLat||Object.keys(produkDipilih).length==0){
   alert("Lengkapi data dulu!");
   return;
  }
@@ -256,23 +305,16 @@ function proses(){
  "============================%0A"+
  "📦 PESANAN BARU%0A"+
  "============================%0A%0A"+
- "👤 Nomor Pembeli:%0A"+noWa+
- "%0A%0A🛒 DETAIL PRODUK%0A"+
- "----------------------------%0A"+
  detail+
- "%0A📊 RINGKASAN%0A"+
- "----------------------------%0A"+
- "Jumlah Produk : "+Object.keys(produkDipilih).length+" Jenis%0A"+
- "Total Item : "+totalItem+" Pcs%0A"+
- "Total Barang : Rp"+total.toLocaleString()+"%0A"+
- "Ongkir : Rp"+ongkirFix.toLocaleString()+"%0A"+
- "----------------------------%0A"+
- "TOTAL BAYAR : Rp"+totalBayar.toLocaleString()+
- "%0A%0A📍 Lokasi:%0A"+linkMaps+
- "%0A============================";
+ "%0ATotal Item: "+totalItem+
+ "%0ATotal Barang: Rp"+total.toLocaleString()+
+ "%0AOngkir: Rp"+ongkirFix.toLocaleString()+
+ "%0ATotal Bayar: Rp"+totalBayar.toLocaleString()+
+ "%0A%0ALokasi:%0A"+linkMaps;
 
  window.open("https://wa.me/6282319264646?text="+pesan);
 }
+
 </script>
 </body>
 </html>
