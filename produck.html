@@ -87,6 +87,32 @@ button{
  text-align:center;
  font-weight:bold;
 }
+/* SCROLL BUTTON */
+.scroll-buttons{
+  position:fixed;
+  right:15px;
+  bottom:90px; /* di atas tombol checkout */
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  z-index:999;
+}
+
+.scroll-buttons button{
+  width:45px;
+  height:45px;
+  border:none;
+  border-radius:50%;
+  background:#0d6efd;
+  color:white;
+  font-size:20px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+  cursor:pointer;
+}
+
+.scroll-buttons button:hover{
+  transform:scale(1.1);
+}
 </style>
 </head>
 
@@ -322,5 +348,10 @@ function proses(){
 }
 
 </script>
+<!-- SCROLL BUTTON -->
+<div class="scroll-buttons">
+  <button onclick="scrollToTop()">⬆</button>
+  <button onclick="scrollToBottom()">⬇</button>
+</div>
 </body>
 </html>
