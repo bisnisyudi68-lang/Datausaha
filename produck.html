@@ -108,14 +108,27 @@ Checkout & Kirim WhatsApp
 
 <script>
 
-// ================== DATA PRODUK ==================
-let semuaProduk = [
- {kode:"P1", nama:"LCD Samsung A30", harga:120000},
- {kode:"P2", nama:"LCD Samsung A50", harga:135000},
- {kode:"P3", nama:"Battery Samsung A50", harga:70000}
-];
+// ================= GOOGLE SHEET =================
+const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
+const tabProduk="Stock Konter";
 
-let produkDipilih = {};
+let dataProduk=[];
+let produkDipilih={};
+
+fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tabProduk)}`)
+.then(r=>r.text())
+.then(t=>{
+ const json=JSON.parse(t.substring(47).slice(0,-2));
+ const rows=json.table.rows;
+
+ dataProduk=rows
+ .filter(r=>r.c[0] && r.c[1])
+ .map(r=>({
+   kode:r.c[0]?.v||"",
+   nama:r.c[1]?.v||"",
+   harga:parseInt(r.c[3]?.v)||0,
+   stok:parseInt(r.c[6]?.v)||0
+ }));
 
 // ================== RENDER ==================
 function renderProduk(){
