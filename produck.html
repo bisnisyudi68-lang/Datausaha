@@ -108,27 +108,67 @@ Checkout & Kirim WhatsApp
 
 <script>
 
-// ================= GOOGLE SHEET =================
-const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
-const tabProduk="Stock Konter";
+tampilProduk(dataProduk);
+});
 
-let dataProduk=[];
-let produkDipilih={};
+// ================= TAMPIL PRODUK =================
+function tampilProduk(list){
+ hasil.innerHTML="";
+ list.forEach(p=>{
 
-fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tabProduk)}`)
-.then(r=>r.text())
-.then(t=>{
- const json=JSON.parse(t.substring(47).slice(0,-2));
- const rows=json.table.rows;
+ let selected=produkDipilih[p.kode];
+ let qty=selected?selected.qty:0;
 
- dataProduk=rows
- .filter(r=>r.c[0] && r.c[1])
- .map(r=>({
-   kode:r.c[0]?.v||"",
-   nama:r.c[1]?.v||"",
-   harga:parseInt(r.c[3]?.v)||0,
-   stok:parseInt(r.c[6]?.v)||0
- }));
+ hasil.innerHTML+=`
+ <div class="card">
+  <b>${p.nama}</b><br>
+  <small>${p.kode}</small><br>
+  <span class="harga">Rp ${p.harga.toLocaleString()}</span><br><br>
+
+  ${
+   qty===0
+   ? `<button onclick="tambahProduk('${p.kode}')">+ Tambah</button>`
+   : `
+   <div class="qty-box">
+    <button class="qty-btn" onclick="kurangProduk('${p.kode}')">-</button>
+    <b>${qty}</b>
+    <button class="qty-btn" onclick="tambahProduk('${p.kode}')">+</button>
+   </div>
+   `
+  }
+ </div>`;
+ });
+}
+
+function tambahProduk(kode){
+ let produk=dataProduk.find(p=>p.kode===kode);
+ if(!produkDipilih[kode]){
+  produkDipilih[kode]={...produk,qty:1};
+ }else{
+  produkDipilih[kode].qty++;
+ }
+ tampilProduk(dataProduk);
+ updateCart();
+}
+
+function kurangProduk(kode){
+ if(produkDipilih[kode]){
+  produkDipilih[kode].qty--;
+  if(produkDipilih[kode].qty<=0){
+   delete produkDipilih[kode];
+  }
+ }
+ tampilProduk(dataProduk);
+ updateCart();
+}
+
+function filterProduk(){
+ let q=cari.value.toLowerCase();
+ tampilProduk(dataProduk.filter(x=>
+ x.nama.toLowerCase().includes(q)||
+ x.kode.toLowerCase().includes(q)
+ ));
+}
 
 // ================== RENDER ==================
 function renderProduk(){
