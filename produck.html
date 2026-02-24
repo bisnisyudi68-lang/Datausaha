@@ -92,23 +92,31 @@ button{
 }
 
 .scroll-buttons{
-  position:absolute;   /* bukan fixed lagi */
-  right:10px;
-  bottom:140px;
+  position:fixed;
+  top:50%;
+  right:18px;
+  transform:translateY(-50%);
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:14px;
+  z-index:9999;
 }
 
 .scroll-buttons button{
-  width:48px;
-  height:48px;
+  width:52px;
+  height:52px;
   border:none;
   border-radius:50%;
   background:linear-gradient(145deg,#0d6efd,#2563eb);
   color:white;
-  font-size:20px;
-  box-shadow:0 6px 15px rgba(0,0,0,0.25);
+  font-size:22px;
+  box-shadow:0 8px 22px rgba(0,0,0,0.25);
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.scroll-buttons button:hover{
+  transform:scale(1.1);
 }
 .scroll-buttons button:hover{
   transform:scale(1.1);
