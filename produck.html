@@ -279,7 +279,7 @@ map.on('click',function(e){
 
  marker=L.marker([tujuanLat,tujuanLng])
  .addTo(map)
- .bindPopup("Lokasi Anda Saat ini").openPopup();
+ .bindPopup("Klik gunakan lokasi biar akurat").openPopup();
 
  hitungOngkir();
 });
@@ -293,7 +293,7 @@ function gunakanLokasi(){
 
    marker=L.marker([tujuanLat,tujuanLng])
    .addTo(map)
-   .bindPopup("Lokasi Rumah").openPopup();
+   .bindPopup("Pesanan akan di kirim ke lokasi ini").openPopup();
 function scrollToTop(){
   window.scrollTo({
     top:0,
