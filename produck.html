@@ -89,14 +89,32 @@ button{
 }
 .scroll-buttons{
   position:fixed;
-  left:50%;
-  transform:translateX(170px); /* atur ini untuk geser ke kanan */
-  bottom:140px;
+  right:18px;        /* masuk ke dalam */
+  bottom:120px;      /* sejajar dengan card */
   display:flex;
   flex-direction:column;
   gap:12px;
   z-index:9999;
 }
+
+.scroll-buttons button{
+  width:50px;
+  height:50px;
+  border:none;
+  border-radius:50%;
+  background:linear-gradient(145deg,#0d6efd,#2563eb); /* biru bagus */
+  color:white;
+  font-size:22px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:0.3s;
+}
+
+.scroll-buttons button:hover{
+  transform:scale(1.1);
 }
 .scroll-buttons button:hover{
   transform:scale(1.1);
