@@ -524,10 +524,15 @@ function hitungOngkir(){
 // ================== PROSES WA ==================
 function proses(){
 
+ if(document.getElementById("btnCheckout").classList.contains("disabled")){
+  alert("Belum memenuhi minimal belanja.");
+  return;
+ }
+
  let noWa=document.getElementById("waPembeli").value.trim();
 
- if(noWa=="" || !tujuanLat || Object.keys(produkDipilih).length==0){
-  alert("Lengkapi data dulu!");
+ if(noWa=="" || !tujuanLat || !tujuanLng){
+  alert("Lengkapi data & pilih lokasi dulu!");
   return;
  }
 
@@ -544,10 +549,11 @@ function proses(){
   detail+=
   no+". "+p.nama+
   " x"+p.qty+
-  " - Rp "+sub.toLocaleString()+"%0A";
+  " - Rp "+sub.toLocaleString()+"\n";
   no++;
  });
-if(total < minimalBelanja){
+
+ if(total < minimalBelanja){
 
   let kurang = minimalBelanja - total;
 
@@ -559,23 +565,27 @@ if(total < minimalBelanja){
   );
 
   return;
-}
+ }
 
  let totalBayar=total+ongkirFix;
 
+ let linkMaps="https://www.google.com/maps?q="+tujuanLat+","+tujuanLng;
+
  let pesan=
- "============================%0A"+
- "📦 PESANAN BARU%0A"+
- "============================%0A%0A"+
+ "============================\n"+
+ "📦 PESANAN BARU\n"+
+ "============================\n\n"+
  detail+
- "%0ATotal Item: "+totalItem+
- "%0ATotal Barang: Rp"+total.toLocaleString()+
- "%0AOngkir: Rp"+ongkirFix.toLocaleString()+
- "%0ATotal Bayar: Rp"+totalBayar.toLocaleString();
+ "\nTotal Item: "+totalItem+
+ "\nTotal Barang: Rp"+total.toLocaleString()+
+ "\nOngkir: Rp"+ongkirFix.toLocaleString()+
+ "\nTotal Bayar: Rp"+totalBayar.toLocaleString()+
+ "\n\nLokasi:\n"+linkMaps;
 
- window.open("https://wa.me/6282319264646?text="+pesan);
+ let encoded = encodeURIComponent(pesan);
+
+ window.open("https://wa.me/6282319264646?text="+encoded);
 }
-
 renderProduk();
 
 </script>
