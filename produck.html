@@ -352,8 +352,45 @@ function proses(){
   "%0A";
   no++;
  });
+});
+ 
+// ==================== CEK MINIMAL BELANJA ====================
 
- let totalBayar=total+ongkirFix;
+// Hitung jarak
+let jarakKm = map.distance(
+  [tokoLat, tokoLng],
+  [tujuanLat, tujuanLng]
+) / 1000;
+
+// Tentukan minimal belanja
+let minimalBelanja = 0;
+
+if(jarakKm > 10 && jarakKm <= 20){
+  minimalBelanja = 200000;
+}
+else if(jarakKm > 20 && jarakKm <= 30){
+  minimalBelanja = 300000;
+}
+else if(jarakKm > 30 && jarakKm <= 40){
+  minimalBelanja = 500000;
+}
+else if(jarakKm > 40){
+  minimalBelanja = 700000;
+}
+
+// Cek
+if(total < minimalBelanja){
+  alert(
+    "Area ± " + jarakKm.toFixed(1) + " km.\n" +
+    "Minimal belanja Rp" +
+    minimalBelanja.toLocaleString()
+  );
+  return;
+}
+
+// =============================================================
+
+let totalBayar = total + ongkirFix;
  let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
 
  let pesan=
