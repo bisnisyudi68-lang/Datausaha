@@ -285,11 +285,19 @@ function proses(){
   " - Rp "+sub.toLocaleString()+"%0A";
   no++;
  });
+if(total < minimalBelanja){
 
- if(total<minimalBelanja){
-  alert("Minimal belanja untuk jarak "+jarakFix.toFixed(1)+" km adalah Rp"+minimalBelanja.toLocaleString());
+  let kurang = minimalBelanja - total;
+
+  alert(
+    "⚠ Jarak pengantaran: " + jarakFix.toFixed(1) + " km\n\n" +
+    "Minimal belanja untuk area ini Rp" + minimalBelanja.toLocaleString() + "\n\n" +
+    "Silakan tambah belanja lagi Rp" + kurang.toLocaleString() +
+    " agar pesanan bisa kami antar 🙏"
+  );
+
   return;
- }
+}
 
  let totalBayar=total+ongkirFix;
 
