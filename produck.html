@@ -2,109 +2,195 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>TOKO SIAP ANTAR</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>TOKO SIAP ANTAR</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body{
- font-family:Arial;
- margin:0;
- background:#f2f2f2;
- padding-bottom:130px;
-}
-header{
- background:#15803d;
- color:white;
- padding:15px;
- text-align:center;
- font-weight:bold;
- font-size:20px;
-}
-input{
- width:95%;
- padding:10px;
- margin:10px;
- border-radius:8px;
- border:1px solid #ccc;
-}
-.card{
- background:white;
- margin:10px;
- padding:12px;
- border-radius:12px;
- box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-.harga{
- color:#15803d;
- font-weight:bold;
-}
-.qtyBox{
- display:flex;
- align-items:center;
- gap:10px;
-}
-.qtyBtn{
- background:#15803d;
- color:white;
- width:30px;
- height:30px;
- border:none;
- border-radius:6px;
-}
-#map{
- height:250px;
- margin:10px;
- border-radius:12px;
-}
-#infoArea{
- margin:10px;
- font-weight:bold;
-}
-.checkout{
- position:fixed;
- bottom:0;
- width:100%;
- background:#15803d;
- color:white;
- padding:15px;
- text-align:center;
- font-weight:bold;
- cursor:pointer;
-}
-.checkout.disabled{
- background:#9ca3af;
-}
- .scroll-buttons{
-  position:fixed;
-  top:50%;
-  right:20px;
-  transform:translateY(-50%);
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  z-index:9999;
-}
-
-.scroll-buttons button{
-  width:50px;
-  height:50px;
-  border:none;
-  border-radius:50%;
-  background:linear-gradient(145deg,#0d6efd,#2563eb);
-  color:white;
-  font-size:22px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.25);
-  cursor:pointer;
-}
+body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:120px}
+header{background:#15803d;color:#fff;padding:15px;text-align:center;font-weight:bold}
+.card{background:#fff;margin:10px;padding:12px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer}
+.btnTambah{background:#e5e5e5}
+.checkout{position:fixed;bottom:0;width:100%;background:#15803d;color:#fff;padding:15px;text-align:center;font-weight:bold}
+#map{height:250px;margin:10px;border-radius:12px}
+.scroll-buttons{position:fixed;right:15px;bottom:140px;display:flex;flex-direction:column;gap:10px}
+.scroll-buttons button{width:50px;height:50px;border-radius:50%;background:#2563eb;color:#fff;font-size:20px}
 </style>
 </head>
 <body>
 
 <header>🛒 TOKO SIAP ANTAR</header>
 
+<div id="listProduk"></div>
+
+<h3 style="margin-left:10px">📍 Pilih Lokasi Rumah</h3>
+<div id="map"></div>
+<button onclick="gunakanLokasi()" style="margin:10px;width:95%;background:#2563eb;color:#fff">
+📡 Gunakan Lokasi Saya
+</button>
+
+<input type="text" id="waPembeli" placeholder="Nomor WhatsApp (08xxxx)" style="width:95%;margin:10px;padding:10px;border-radius:8px;border:1px solid #ccc">
+
+<div class="checkout" onclick="proses()">
+<span id="ringkasan">0 Produk | 0 Pcs | Rp0</span><br>
+Checkout & Kirim WhatsApp
+</div>
+
+<div class="scroll-buttons">
+<button onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<button onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})">↓</button>
+</div>
+
+<script>
+// ================= GOOGLE SHEET =================
+const sheetID = "1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
+const sheetName = "Stock Konter";
+
+let semuaProduk=[];
+let produkDipilih={};
+
+fetch(`https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}`)
+.then(res=>res.text())
+.then(data=>{
+let json=JSON.parse(data.substr(47).slice(0,-2));
+semuaProduk=json.table.rows.map(r=>({
+kode:r.c[0]?.v||"",
+nama:r.c[1]?.v||"",
+harga:r.c[2]?.v||0
+}));
+renderProduk();
+});
+
+// ================= RENDER =================
+function renderProduk(){
+let list=document.getElementById("listProduk");
+list.innerHTML="";
+semuaProduk.forEach(p=>{
+let div=document.createElement("div");
+div.className="card";
+div.innerHTML=`<b>${p.nama}</b><br>Rp ${Number(p.harga).toLocaleString()}`;
+let btn=document.createElement("button");
+btn.className="btnTambah";
+btn.innerText="+ Tambah";
+btn.onclick=()=>tambahProduk(p);
+div.appendChild(btn);
+list.appendChild(div);
+});
+}
+
+function tambahProduk(p){
+if(!produkDipilih[p.kode]){
+produkDipilih[p.kode]={...p,qty:1};
+}else{
+produkDipilih[p.kode].qty++;
+}
+updateRingkasan();
+}
+
+function updateRingkasan(){
+let total=0,totalItem=0;
+Object.values(produkDipilih).forEach(p=>{
+total+=p.harga*p.qty;
+totalItem+=p.qty;
+});
+document.getElementById("ringkasan").innerText=
+Object.keys(produkDipilih).length+" Produk | "+
+totalItem+" Pcs | Rp"+total.toLocaleString();
+}
+
+// ================= MAP =================
+const tokoLat=-6.7995;
+const tokoLng=108.3441;
+
+let tujuanLat=null;
+let tujuanLng=null;
+let jarakFix=0;
+let ongkirFix=0;
+
+let map=L.map('map').setView([tokoLat,tokoLng],13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'OpenStreetMap'
+}).addTo(map);
+
+L.marker([tokoLat,tokoLng]).addTo(map).bindPopup("Lokasi Toko");
+
+let markerRumah=null;
+
+map.on('click',function(e){
+tujuanLat=e.latlng.lat;
+tujuanLng=e.latlng.lng;
+
+if(markerRumah)map.removeLayer(markerRumah);
+markerRumah=L.marker([tujuanLat,tujuanLng]).addTo(map).bindPopup("Lokasi Rumah").openPopup();
+
+hitungOngkir();
+});
+
+function gunakanLokasi(){
+navigator.geolocation.getCurrentPosition(function(pos){
+tujuanLat=pos.coords.latitude;
+tujuanLng=pos.coords.longitude;
+
+if(markerRumah)map.removeLayer(markerRumah);
+markerRumah=L.marker([tujuanLat,tujuanLng]).addTo(map).bindPopup("Lokasi Rumah").openPopup();
+map.setView([tujuanLat,tujuanLng],15);
+
+hitungOngkir();
+});
+}
+
+function hitungOngkir(){
+jarakFix=map.distance([tokoLat,tokoLng],[tujuanLat,tujuanLng])/1000;
+ongkirFix=Math.round(jarakFix*2000);
+if(ongkirFix<10000)ongkirFix=10000;
+}
+
+// ================= PROSES WA =================
+function proses(){
+
+let no=document.getElementById("waPembeli").value.trim();
+if(!no||!tujuanLat||Object.keys(produkDipilih).length==0){
+alert("Lengkapi data dulu!");
+return;
+}
+
+let total=0,totalItem=0,detail="";
+let noUrut=1;
+
+Object.values(produkDipilih).forEach(p=>{
+let sub=p.harga*p.qty;
+total+=sub;
+totalItem+=p.qty;
+detail+=noUrut+". "+p.nama+" x"+p.qty+" - Rp "+sub.toLocaleString()+"\n\n";
+noUrut++;
+});
+
+let totalBayar=total+ongkirFix;
+
+let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
+
+let pesan=
+"============================\n"+
+"📦 PESANAN BARU\n"+
+"============================\n\n"+
+detail+
+"Total Item: "+totalItem+"\n"+
+"Total Barang: Rp"+total.toLocaleString()+"\n"+
+"Ongkir: Rp"+ongkirFix.toLocaleString()+"\n"+
+"Total Bayar: Rp"+totalBayar.toLocaleString()+"\n\n"+
+"Lokasi:\n"+linkMaps;
+
+window.open("https://wa.me/62XXXXXXXXXX?text="+encodeURIComponent(pesan));
+}
+
+</script>
+</body>
+</html>
 <input type="text" id="cari" placeholder="Cari produk..." onkeyup="renderProduk()">
 
 <div id="listProduk"></div>
