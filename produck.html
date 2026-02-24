@@ -488,8 +488,9 @@ map.on('click', function(e){
  markerRumah = L.marker([tujuanLat, tujuanLng]).addTo(map)
  .bindPopup("Lokasi Rumah").openPopup();
 
- hitungZona();
-});
+ hitungOngkir();
+ });
+ }
 
 function gunakanLokasi(){
  navigator.geolocation.getCurrentPosition(function(pos){
@@ -505,10 +506,6 @@ function gunakanLokasi(){
    .bindPopup("Lokasi Rumah").openPopup();
 
    map.setView([tujuanLat, tujuanLng], 15);
-
-   hitungZona();
- });
-}
 
   hitungOngkir();
  });
@@ -544,10 +541,10 @@ function hitungOngkir(){
 // ================== PROSES WA ==================
 function proses(){
 
- let noWa = document.getElementById("waPembeli").value.trim();
-
- if(noWa=="" || tujuanLat==null || tujuanLng==null || Object.keys(produkDipilih).length==0){
-  alert("Lengkapi data & pilih lokasi dulu!");
+ let noWa=document.getElementById("waPembeli").value.trim();
+ if(noWa==""){alert("Masukkan nomor WA dulu");return;}
+ if(Object.keys(produkDipilih).length==0 || !tujuanLat){
+  alert("Pilih produk & lokasi dulu!");
   return;
  }
 
@@ -557,37 +554,37 @@ function proses(){
  let no=1;
 
  Object.values(produkDipilih).forEach(p=>{
-  let sub=p.harga*p.qty;
-  total+=sub;
+  let subtotal=p.harga*p.qty;
+  total+=subtotal;
   totalItem+=p.qty;
-
-  detail+=
-  no+". "+p.nama+
-  " x"+p.qty+
-  " - Rp "+sub.toLocaleString()+"\n";
+  detail+=no+". "+p.nama+" x"+p.qty+
+  " - Rp "+subtotal.toLocaleString()+"%0A";
   no++;
  });
 
- let totalBayar = total + ongkirFix;
+ let totalBayar=total+ongkirFix;
+ let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
 
- let linkMaps = "https://www.google.com/maps?q="+tujuanLat+","+tujuanLng;
-
- let pesan =
- "============================\n"+
- "📦 PESANAN BARU\n"+
- "============================\n\n"+
+ let pesan=
+ "============================%0A"+
+ "📦 PESANAN BARU%0A"+
+ "============================%0A%0A"+
+ "👤 Nomor Pembeli:%0A"+noWa+
+ "%0A%0A🛒 DETAIL PRODUK%0A----------------------------%0A"+
  detail+
- "\nTotal Item: "+totalItem+
- "\nTotal Barang: Rp"+total.toLocaleString()+
- "\nOngkir: Rp"+ongkirFix.toLocaleString()+
- "\nTotal Bayar: Rp"+totalBayar.toLocaleString()+
- "\n\nLokasi:\n"+linkMaps;
+ "%0A📊 RINGKASAN%0A----------------------------%0A"+
+ "Jumlah Produk : "+Object.keys(produkDipilih).length+" Jenis"+
+ "%0ATotal Item : "+totalItem+" Pcs"+
+ "%0ATotal Barang : Rp"+total.toLocaleString()+
+ "%0AOngkir : Rp"+ongkirFix.toLocaleString()+
+ "%0A----------------------------%0A"+
+ "TOTAL BAYAR : Rp"+totalBayar.toLocaleString()+
+ "%0A%0A📍 Lokasi:%0A"+linkMaps+
+ "%0A============================";
 
- let url = "https://wa.me/6282319264646?text=" + encodeURIComponent(pesan);
-
- console.log(url); // cek debug
- window.open(url);
+ window.open("https://wa.me/6282319264646?text="+pesan);
 }
+
 renderProduk();
 
 </script>
