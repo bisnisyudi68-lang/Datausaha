@@ -283,7 +283,19 @@ function gunakanLokasi(){
    marker=L.marker([tujuanLat,tujuanLng])
    .addTo(map)
    .bindPopup("Lokasi Rumah").openPopup();
+function scrollToTop(){
+  window.scrollTo({
+    top:0,
+    behavior:'smooth'
+  });
+}
 
+function scrollToBottom(){
+  window.scrollTo({
+    top:document.body.scrollHeight,
+    behavior:'smooth'
+  });
+}
    hitungOngkir();
  });
 }
