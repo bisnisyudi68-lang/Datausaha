@@ -454,41 +454,61 @@ function updateRingkasan(){
 }
 
 // ================== MAP ==================
-const tokoLat=-6.7995;
-const tokoLng=108.3441;
+// ================= MAP =================
+const tokoLat = -6.7995;
+const tokoLng = 108.3441;
 
-let tujuanLat=null;
-let tujuanLng=null;
-let ongkirFix=0;
-let minimalBelanja=0;
-let jarakFix=0;
+let tujuanLat = null;
+let tujuanLng = null;
+let ongkirFix = 0;
+let minimalBelanja = 0;
+let jarakFix = 0;
 
-var map=L.map('map').setView([tokoLat,tokoLng],13);
+var map = L.map('map').setView([tokoLat, tokoLng], 13);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+ attribution: '&copy; OpenStreetMap'
+}).addTo(map);
 
-L.marker([tokoLat,tokoLng]).addTo(map)
-.bindPopup("Lokasi Toko").openPopup();
+L.marker([tokoLat, tokoLng]).addTo(map)
+.bindPopup("Lokasi Toko");
 
-let marker;
+let markerRumah = null;
 
-map.on('click',function(e){
- tujuanLat=e.latlng.lat;
- tujuanLng=e.latlng.lng;
+// 🔥 klik map
+map.on('click', function(e){
 
- if(marker) map.removeLayer(marker);
- marker=L.marker([tujuanLat,tujuanLng]).addTo(map);
+ tujuanLat = e.latlng.lat;
+ tujuanLng = e.latlng.lng;
 
- hitungOngkir();
+ if(markerRumah){
+   map.removeLayer(markerRumah);
+ }
+
+ markerRumah = L.marker([tujuanLat, tujuanLng]).addTo(map)
+ .bindPopup("Lokasi Rumah").openPopup();
+
+ hitungZona();
 });
 
 function gunakanLokasi(){
- navigator.geolocation.getCurrentPosition(pos=>{
-  tujuanLat=pos.coords.latitude;
-  tujuanLng=pos.coords.longitude;
+ navigator.geolocation.getCurrentPosition(function(pos){
 
-  if(marker) map.removeLayer(marker);
-  marker=L.marker([tujuanLat,tujuanLng]).addTo(map);
+   tujuanLat = pos.coords.latitude;
+   tujuanLng = pos.coords.longitude;
+
+   if(markerRumah){
+     map.removeLayer(markerRumah);
+   }
+
+   markerRumah = L.marker([tujuanLat, tujuanLng]).addTo(map)
+   .bindPopup("Lokasi Rumah").openPopup();
+
+   map.setView([tujuanLat, tujuanLng], 15);
+
+   hitungZona();
+ });
+}
 
   hitungOngkir();
  });
@@ -529,9 +549,9 @@ function proses(){
   return;
  }
 
- let noWa=document.getElementById("waPembeli").value.trim();
+ let noWa = document.getElementById("waPembeli").value.trim();
 
- if(noWa=="" || !tujuanLat || !tujuanLng){
+ if(noWa=="" || tujuanLat==null || tujuanLng==null){
   alert("Lengkapi data & pilih lokasi dulu!");
   return;
  }
@@ -553,25 +573,11 @@ function proses(){
   no++;
  });
 
- if(total < minimalBelanja){
+ let totalBayar = total + ongkirFix;
 
-  let kurang = minimalBelanja - total;
+ let linkMaps = "https://www.google.com/maps?q="+tujuanLat+","+tujuanLng;
 
-  alert(
-    "⚠ Jarak pengantaran: " + jarakFix.toFixed(1) + " km\n\n" +
-    "Minimal belanja untuk area ini Rp" + minimalBelanja.toLocaleString() + "\n\n" +
-    "Silakan tambah belanja lagi Rp" + kurang.toLocaleString() +
-    " agar pesanan bisa kami antar 🙏"
-  );
-
-  return;
- }
-
- let totalBayar=total+ongkirFix;
-
- let linkMaps="https://www.google.com/maps?q="+tujuanLat+","+tujuanLng;
-
- let pesan=
+ let pesan =
  "============================\n"+
  "📦 PESANAN BARU\n"+
  "============================\n\n"+
@@ -582,9 +588,9 @@ function proses(){
  "\nTotal Bayar: Rp"+totalBayar.toLocaleString()+
  "\n\nLokasi:\n"+linkMaps;
 
- let encoded = encodeURIComponent(pesan);
-
- window.open("https://wa.me/6282319264646?text="+encoded);
+ window.open(
+   "https://wa.me/6282319264646?text=" + encodeURIComponent(pesan)
+ );
 }
 renderProduk();
 
