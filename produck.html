@@ -356,40 +356,40 @@ function proses(){
  
 // ==================== CEK MINIMAL BELANJA ====================
 
-// Hitung jarak
-let jarakKm = map.distance(
-  [tokoLat, tokoLng],
-  [tujuanLat, tujuanLng]
-) / 1000;
+if(typeof tujuanLat !== "undefined" && tujuanLat !== null){
 
-// Tentukan minimal belanja
-let minimalBelanja = 0;
+  let jarakKm = map.distance(
+    [tokoLat, tokoLng],
+    [tujuanLat, tujuanLng]
+  ) / 1000;
 
-if(jarakKm > 10 && jarakKm <= 20){
-  minimalBelanja = 200000;
-}
-else if(jarakKm > 20 && jarakKm <= 30){
-  minimalBelanja = 300000;
-}
-else if(jarakKm > 30 && jarakKm <= 40){
-  minimalBelanja = 500000;
-}
-else if(jarakKm > 40){
-  minimalBelanja = 700000;
-}
+  let minimalBelanja = 0;
 
-// Cek
-if(total < minimalBelanja){
-  alert(
-    "Area ± " + jarakKm.toFixed(1) + " km.\n" +
-    "Minimal belanja Rp" +
-    minimalBelanja.toLocaleString()
-  );
-  return;
+  if(jarakKm > 10 && jarakKm <= 20){
+    minimalBelanja = 200000;
+  }
+  else if(jarakKm > 20 && jarakKm <= 30){
+    minimalBelanja = 300000;
+  }
+  else if(jarakKm > 30 && jarakKm <= 40){
+    minimalBelanja = 500000;
+  }
+  else if(jarakKm > 40){
+    minimalBelanja = 700000;
+  }
+
+  if(total < minimalBelanja){
+    alert(
+      "Area ± " + jarakKm.toFixed(1) + " km.\n" +
+      "Minimal belanja Rp" +
+      minimalBelanja.toLocaleString()
+    );
+    return;
+  }
+
 }
 
 // =============================================================
-
 let totalBayar = total + ongkirFix;
  let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
 
