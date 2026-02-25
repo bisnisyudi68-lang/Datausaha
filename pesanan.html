@@ -172,8 +172,8 @@ function kurang(k){
 }
 
 // ================= MAP =================
-const tokoLat=-6.7995;
-const tokoLng=108.3441;
+const tokoLat=-6.883831;
+const tokoLng=108.302788;
 
 let tujuanLat=null;
 let tujuanLng=null;
@@ -187,7 +187,7 @@ L.tileLayer(
 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
 ).addTo(map);
 
-L.marker([tokoLat,tokoLng]).addTo(map).bindPopup("Lokasi Toko").openPopup();
+L.marker([tokoLat,tokoLng]).addTo(map).bindPopup("Lokasi Penjual").openPopup();
 
 let marker;
 
@@ -209,7 +209,7 @@ function setLokasi(lat,lng){
 
  marker=L.marker([lat,lng])
  .addTo(map)
- .bindPopup("Lokasi Rumah").openPopup();
+ .bindPopup("Pesanan akan di kirim sesuai lokasi ini").openPopup();
 
  hitungZona();
 }
