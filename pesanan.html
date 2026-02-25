@@ -135,8 +135,7 @@ function renderProduk(){
    div.innerHTML=`
    <b>${p.nama}</b><br>
    ${p.kode}<br>
-   <span class="harga">Rp ${p.harga.toLocaleString()}</span>
-   `;
+ <span class="harga">Rp ${Math.round(p.harga).toLocaleString()}</span>
 
    if(qty==0){
      let btn=document.createElement("button");
