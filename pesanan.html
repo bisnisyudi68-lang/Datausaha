@@ -282,31 +282,51 @@ function proses(){
   return;
  }
 
- let total=0,totalItem=0,detail="",no=1;
+ let total=0,totalItem=0,detail="";
+ let no=1;
 
  Object.values(produkDipilih).forEach(p=>{
   let sub=p.harga*p.qty;
   total+=sub;
   totalItem+=p.qty;
-  detail+=no+". "+p.nama+" x"+p.qty+" - Rp "+sub.toLocaleString()+"%0A";
+
+  detail+=
+  "• "+p.nama+"%0A"+
+  "  Qty: "+p.qty+"%0A"+
+  "  Harga: Rp"+sub.toLocaleString()+"%0A%0A";
+  
   no++;
  });
 
  let totalBayar=total+ongkirFix;
  let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
 
+ let tanggal=new Date().toLocaleDateString("id-ID");
+
  let pesan=
-"============================%0A"+
-"📦 PESANAN BARU%0A"+
-"============================%0A%0A"+
-"👤 Nomor Pembeli:%0A"+
-noWa+"%0A%0A"+
+"━━━━━━━━━━━━━━━━━━━━%0A"+
+"🧾 INVOICE PESANAN MASUK%0A"+
+"━━━━━━━━━━━━━━━━━━━━%0A%0A"+
+"📌 ID Order: #"+Date.now()+"%0A"+
+"📅 Tanggal: "+tanggal+"%0A%0A"+
+"👤 Nomor Pembeli:%0A"+noWa+"%0A%0A"+
+"━━━━━━━━━━━━━━━━━━━━%0A"+
+"📦 Detail Produk%0A"+
+"━━━━━━━━━━━━━━━━━━━━%0A%0A"+
 detail+
- "%0ATotal Item: "+totalItem+
- "%0ATotal Barang: Rp"+total.toLocaleString()+
- "%0AOngkir: Rp"+ongkirFix.toLocaleString()+
- "%0ATotal Bayar: Rp"+totalBayar.toLocaleString()+
- "%0A%0ALokasi:%0A"+linkMaps;
+"━━━━━━━━━━━━━━━━━━━━%0A"+
+"💰 RINCIAN PEMBAYARAN%0A"+
+"━━━━━━━━━━━━━━━━━━━━%0A%0A"+
+"Total Barang : Rp"+total.toLocaleString()+"%0A"+
+"Ongkir       : Rp"+ongkirFix.toLocaleString()+"%0A"+
+"────────────────────%0A"+
+"TOTAL BAYAR : Rp"+totalBayar.toLocaleString()+"%0A%0A"+
+"━━━━━━━━━━━━━━━━━━━━%0A"+
+"📍 Titik Lokasi Pembeli%0A"+
+"━━━━━━━━━━━━━━━━━━━━%0A"+
+linkMaps+
+"%0A%0A⚠️ Mohon cek kembali detail pesanan sebelum diproses.%0A"+
+"━━━━━━━━━━━━━━━━━━━━";
 
  window.open("https://wa.me/6282319264646?text="+pesan);
 }
