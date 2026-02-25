@@ -282,54 +282,57 @@ function proses(){
   return;
  }
 
- let total=0,totalItem=0,detail="";
- let no=1;
+ let total=0;
+ let totalItem=0;
+ let detail="";
 
  Object.values(produkDipilih).forEach(p=>{
   let sub=p.harga*p.qty;
   total+=sub;
   totalItem+=p.qty;
 
-  detail+=
-  "• "+p.nama+"%0A"+
-  "  Qty: "+p.qty+"%0A"+
-  "  Harga: Rp"+sub.toLocaleString()+"%0A%0A";
-  
-  no++;
+  detail += 
+  "• "+p.nama+"\n"+
+  "  Qty: "+p.qty+"\n"+
+  "  Harga: Rp"+sub.toLocaleString()+"\n\n";
  });
 
  let totalBayar=total+ongkirFix;
  let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
-
  let tanggal=new Date().toLocaleDateString("id-ID");
+ let orderId=Date.now();
 
- let pesan=
-"━━━━━━━━━━━━━━━━━━━━%0A"+
-"🧾 INVOICE PESANAN MASUK%0A"+
-"━━━━━━━━━━━━━━━━━━━━%0A%0A"+
-"📌 ID Order: #"+Date.now()+"%0A"+
-"📅 Tanggal: "+tanggal+"%0A%0A"+
-"👤 Nomor Pembeli:%0A"+noWa+"%0A%0A"+
-"━━━━━━━━━━━━━━━━━━━━%0A"+
-"📦 Detail Produk%0A"+
-"━━━━━━━━━━━━━━━━━━━━%0A%0A"+
+ let pesan =
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"🧾 INVOICE PESANAN MASUK\n"+
+"━━━━━━━━━━━━━━━━━━━━\n\n"+
+"📌 ID Order: #"+orderId+"\n"+
+"📅 Tanggal: "+tanggal+"\n\n"+
+"👤 Nomor Pembeli:\n"+noWa+"\n\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"📦 Detail Produk\n"+
+"━━━━━━━━━━━━━━━━━━━━\n\n"+
 detail+
-"━━━━━━━━━━━━━━━━━━━━%0A"+
-"💰 RINCIAN PEMBAYARAN%0A"+
-"━━━━━━━━━━━━━━━━━━━━%0A%0A"+
-"Total Barang : Rp"+total.toLocaleString()+"%0A"+
-"Ongkir       : Rp"+ongkirFix.toLocaleString()+"%0A"+
-"────────────────────%0A"+
-"TOTAL BAYAR : Rp"+totalBayar.toLocaleString()+"%0A%0A"+
-"━━━━━━━━━━━━━━━━━━━━%0A"+
-"📍 Titik Lokasi Pembeli%0A"+
-"━━━━━━━━━━━━━━━━━━━━%0A"+
-linkMaps+
-"%0A%0A⚠️ Mohon cek kembali detail pesanan sebelum diproses.%0A"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"💰 RINCIAN PEMBAYARAN\n"+
+"━━━━━━━━━━━━━━━━━━━━\n\n"+
+"Total Item   : "+totalItem+"\n"+
+"Total Barang : Rp"+total.toLocaleString()+"\n"+
+"Ongkir       : Rp"+ongkirFix.toLocaleString()+"\n"+
+"────────────────────\n"+
+"TOTAL BAYAR  : Rp"+totalBayar.toLocaleString()+"\n\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"📍 Titik Lokasi Pembeli\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+linkMaps+"\n\n"+
+"⚠️ Mohon cek kembali detail pesanan sebelum diproses.\n"+
 "━━━━━━━━━━━━━━━━━━━━";
 
- window.open("https://wa.me/6282319264646?text="+encodeURIComponent(pesan));
-
+ window.open(
+   "https://wa.me/6282319264646?text="+encodeURIComponent(pesan),
+   "_blank"
+ );
+}
 // ================= SCROLL =================
 function scrollToTop(){
  window.scrollTo({top:0,behavior:'smooth'});
