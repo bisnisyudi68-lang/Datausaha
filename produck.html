@@ -9,76 +9,28 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body{
- font-family:Arial;
- margin:0;
- background:#f2f2f2;
- padding-bottom:120px;
-}
+body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:140px}
+header{background:#15803d;color:white;padding:15px;text-align:center;font-size:20px;font-weight:bold}
+input{width:95%;padding:10px;margin:10px;border-radius:8px;border:1px solid #ccc}
+.card{background:white;margin:10px;padding:12px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.harga{color:#15803d;font-weight:bold}
+button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer}
+.btnTambah{background:#e5e5e5}
+.qtyBox{display:flex;align-items:center;gap:10px;margin-top:8px}
+.qtyBtn{background:#15803d;color:white;width:35px;height:35px}
+#map{height:250px;margin:10px;border-radius:12px}
 
-header{
- background:#15803d;
- color:white;
- padding:15px;
- text-align:center;
- font-size:20px;
- font-weight:bold;
-}
-
-input{
- width:95%;
+.infoZona{
+ margin:10px;
  padding:10px;
- margin:10px;
- border-radius:8px;
- border:1px solid #ccc;
-}
-
-.card{
  background:white;
- margin:10px;
- padding:12px;
- border-radius:12px;
+ border-radius:10px;
+ font-size:14px;
  box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
-.harga{
- color:#15803d;
- font-weight:bold;
-}
-
-button{
- padding:6px 12px;
- border:none;
- border-radius:6px;
- cursor:pointer;
-}
-
-.btnTambah{
- background:#e5e5e5;
-}
-
-.qtyBox{
- display:flex;
- align-items:center;
- gap:10px;
- margin-top:8px;
-}
-
-.qtyBtn{
- background:#15803d;
- color:white;
- width:35px;
- height:35px;
-}
-
-#map{
- height:250px;
- margin:10px;
- border-radius:12px;
-}
-
 .checkout{
- position:sticky;
+ position:fixed;
  bottom:0;
  width:100%;
  background:#15803d;
@@ -86,6 +38,31 @@ button{
  padding:15px;
  text-align:center;
  font-weight:bold;
+ transition:0.3s;
+}
+
+.checkout.disabled{
+ background:#9ca3af;
+}
+
+.scroll-buttons{
+ position:fixed;
+ right:15px;
+ bottom:170px;
+ display:flex;
+ flex-direction:column;
+ gap:10px;
+ z-index:9999;
+}
+
+.scroll-buttons button{
+ width:50px;
+ height:50px;
+ border-radius:50%;
+ background:linear-gradient(145deg,#0d6efd,#2563eb);
+ color:white;
+ font-size:20px;
+ box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
 </style>
 </head>
@@ -105,11 +82,20 @@ button{
 📡 Gunakan Lokasi Saya
 </button>
 
+<div id="infoZona" class="infoZona">
+Belum memilih lokasi
+</div>
+
 <input type="text" id="waPembeli" placeholder="Nomor WhatsApp Anda (08xxxx)">
 
-<div class="checkout" onclick="proses()">
+<div class="checkout disabled" id="btnCheckout" onclick="proses()">
 <span id="ringkasan">0 Produk | 0 Pcs | Rp0</span><br>
 Checkout & Kirim WhatsApp
+</div>
+
+<div class="scroll-buttons">
+<button onclick="scrollToTop()">↑</button>
+<button onclick="scrollToBottom()">↓</button>
 </div>
 
 <script>
@@ -118,208 +104,3 @@ Checkout & Kirim WhatsApp
 const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
 const sheetName="Stock Konter";
 
-let semuaProduk=[];
-let produkDipilih={};
-
-fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`)
-.then(res=>res.text())
-.then(data=>{
- let json=JSON.parse(data.substring(47).slice(0,-2));
- semuaProduk=json.table.rows.map(r=>({
-   kode:r.c[0]?.v||"",
-   nama:r.c[1]?.v||"",
-   harga:r.c[3]?.v||0
- }));
- renderProduk();
-});
-
-// ================= RENDER PRODUK =================
-function renderProduk(){
- let keyword=document.getElementById("cari").value.toLowerCase();
- let list=document.getElementById("listProduk");
- list.innerHTML="";
-
- semuaProduk
- .filter(p=>p.nama.toLowerCase().includes(keyword))
- .forEach(p=>{
-
-   let div=document.createElement("div");
-   div.className="card";
-
-   let qty=produkDipilih[p.kode]?.qty||0;
-
-   div.innerHTML=`
-   <b>${p.nama}</b><br>
-   ${p.kode}<br>
-   <span class="harga">Rp ${p.harga.toLocaleString()}</span>
-   `;
-
-   if(qty==0){
-     let btn=document.createElement("button");
-     btn.className="btnTambah";
-     btn.innerText="+ Tambah";
-     btn.onclick=()=>tambahProduk(p);
-     div.appendChild(btn);
-   }else{
-     let box=document.createElement("div");
-     box.className="qtyBox";
-     box.innerHTML=`
-      <button class="qtyBtn" onclick="kurang('${p.kode}')">-</button>
-      <span>${qty}</span>
-      <button class="qtyBtn" onclick="tambah('${p.kode}')">+</button>
-     `;
-     div.appendChild(box);
-   }
-
-   list.appendChild(div);
- });
-
- updateRingkasan();
-}
-
-// ================= TAMBAH / KURANG =================
-function tambahProduk(p){
- produkDipilih[p.kode]={...p, qty:1};
- renderProduk();
-}
-
-function tambah(kode){
- produkDipilih[kode].qty++;
- renderProduk();
-}
-
-function kurang(kode){
- produkDipilih[kode].qty--;
- if(produkDipilih[kode].qty<=0){
-  delete produkDipilih[kode];
- }
- renderProduk();
-}
-
-// ================= RINGKASAN =================
-function updateRingkasan(){
- let total=0;
- let totalItem=0;
-
- Object.values(produkDipilih).forEach(p=>{
-   total+=p.harga*p.qty;
-   totalItem+=p.qty;
- });
-
- document.getElementById("ringkasan").innerText=
- Object.keys(produkDipilih).length+
- " Produk | "+
- totalItem+
- " Pcs | Rp"+
- total.toLocaleString();
-}
-
-// ================= MAP =================
-const tokoLat=-6.7995;
-const tokoLng=108.3441;
-
-let tujuanLat=null;
-let tujuanLng=null;
-let ongkirFix=0;
-
-var map=L.map('map').setView([tokoLat,tokoLng],15);
-
-L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-).addTo(map);
-
-L.marker([tokoLat,tokoLng]).addTo(map)
-.bindPopup("Lokasi Toko").openPopup();
-
-let marker;
-
-map.on('click',function(e){
- tujuanLat=e.latlng.lat;
- tujuanLng=e.latlng.lng;
-
- if(marker) map.removeLayer(marker);
-
- marker=L.marker([tujuanLat,tujuanLng])
- .addTo(map)
- .bindPopup("Lokasi Rumah").openPopup();
-
- hitungOngkir();
-});
-
-function gunakanLokasi(){
- navigator.geolocation.getCurrentPosition(pos=>{
-   tujuanLat=pos.coords.latitude;
-   tujuanLng=pos.coords.longitude;
-
-   if(marker) map.removeLayer(marker);
-
-   marker=L.marker([tujuanLat,tujuanLng])
-   .addTo(map)
-   .bindPopup("Lokasi Rumah").openPopup();
-
-   hitungOngkir();
- });
-}
-
-function hitungOngkir(){
-
- let jarak = map.distance(
-   [tokoLat, tokoLng],
-   [tujuanLat, tujuanLng]
- ) / 1000; // km
-
- ongkirFix = Math.round(jarak * 2000);
-
- if(ongkirFix < 10000){
-   ongkirFix = 10000; // minimal ongkir
- }
-}
-
-// ================= PROSES WA =================
-function proses(){
-
- let noWa=document.getElementById("waPembeli").value.trim();
-
- if(noWa==""||!tujuanLat||Object.keys(produkDipilih).length==0){
-  alert("Lengkapi data dulu!");
-  return;
- }
-
- let total=0;
- let totalItem=0;
- let detail="";
- let no=1;
-
- Object.values(produkDipilih).forEach(p=>{
-  let subtotal=Math.round(p.harga*p.qty);
-  total+=subtotal;
-  totalItem+=p.qty;
-
-  detail+=
-  no+". "+p.nama+
-  " x"+p.qty+
-  " - Rp "+subtotal.toLocaleString()+
-  "%0A";
-  no++;
- });
-
- let totalBayar=total+ongkirFix;
- let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
-
- let pesan=
- "============================%0A"+
- "📦 PESANAN BARU%0A"+
- "============================%0A%0A"+
- detail+
- "%0ATotal Item: "+totalItem+
- "%0ATotal Barang: Rp"+total.toLocaleString()+
- "%0AOngkir: Rp"+ongkirFix.toLocaleString()+
- "%0ATotal Bayar: Rp"+totalBayar.toLocaleString()+
- "%0A%0ALokasi:%0A"+linkMaps;
-
- window.open("https://wa.me/6282319264646?text="+pesan);
-}
-
-</script>
-</body>
-</html>
