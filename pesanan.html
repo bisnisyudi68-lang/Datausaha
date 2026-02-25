@@ -328,8 +328,7 @@ linkMaps+
 "%0A%0A⚠️ Mohon cek kembali detail pesanan sebelum diproses.%0A"+
 "━━━━━━━━━━━━━━━━━━━━";
 
- window.open("https://wa.me/6282319264646?text="+pesan);
-}
+ window.open("https://wa.me/6282319264646?text="+encodeURIComponent(pesan));
 
 // ================= SCROLL =================
 function scrollToTop(){
