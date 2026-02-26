@@ -170,81 +170,51 @@ function kurang(k){
  if(produkDipilih[k].qty<=0)delete produkDipilih[k];
  renderProduk();
 }
-// ================= MAP =================
-const tokoLat = -6.883831;
-const tokoLng = 108.302788;
 
-let tujuanLat = null;
-let tujuanLng = null;
-let ongkirFix = 0;
-let jarakFix = 0;
-let minimalBelanja = 0;
+// ================= MAP =================
+const tokoLat=-6.883831;
+const tokoLng=108.302788;
+
+let tujuanLat=null;
+let tujuanLng=null;
+let ongkirFix=0;
+let jarakFix=0;
+let minimalBelanja=0;
+
+var map=L.map('map').setView([tokoLat,tokoLng],15);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+  attribution: '&copy; OpenStreetMap contributors'
+}
+).addTo(map);
+
+L.marker([tokoLat,tokoLng]).addTo(map).bindPopup("Lokasi Penjual").openPopup();
+
 let marker;
 
-var map = L.map('map').setView([tokoLat, tokoLng], 14);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap'
-}).addTo(map);
-
-L.marker([tokoLat, tokoLng])
-  .addTo(map)
-  .bindPopup("Lokasi Penjual")
-  .openPopup();
-
-map.on('click', function(e){
-  setLokasi(e.latlng.lat, e.latlng.lng);
+map.on('click',function(e){
+ setLokasi(e.latlng.lat,e.latlng.lng);
 });
 
 function gunakanLokasi(){
-  navigator.geolocation.getCurrentPosition(
-    function(pos){
-      setLokasi(pos.coords.latitude, pos.coords.longitude);
-    },
-    function(err){
-      alert("Gagal ambil lokasi: " + err.message);
-    },
-    {
-      enableHighAccuracy:true,
-      timeout:15000,
-      maximumAge:0
-    }
-  );
+ navigator.geolocation.getCurrentPosition(pos=>{
+  setLokasi(pos.coords.latitude,pos.coords.longitude);
+ });
 }
 
 function setLokasi(lat,lng){
-  tujuanLat = lat;
-  tujuanLng = lng;
+ tujuanLat=lat;
+ tujuanLng=lng;
 
-  if(marker){
-    map.removeLayer(marker);
-  }
+ if(marker) map.removeLayer(marker);
 
-  marker = L.marker([lat,lng])
-    .addTo(map)
-    .bindPopup("Lokasi Pengiriman")
-    .openPopup();
+ marker=L.marker([lat,lng])
+ .addTo(map)
+ .bindPopup("Pesanan akan di kirim sesuai lokasi ini").openPopup();
 
-  hitungZona();
-}
-
-function hitungZona(){
-
-  jarakFix = map.distance(
-    [tokoLat,tokoLng],
-    [tujuanLat,tujuanLng]
-  ) / 1000;
-
-  ongkirFix = Math.round(jarakFix * 2000);
-  if(ongkirFix < 10000) ongkirFix = 10000;
-
-  if(jarakFix <= 10) minimalBelanja = 0;
-  else if(jarakFix <= 20) minimalBelanja = 20000;
-  else if(jarakFix <= 30) minimalBelanja = 30000;
-  else if(jarakFix <= 40) minimalBelanja = 50000;
-  else minimalBelanja = 70000;
-
-  updateRingkasan();
+ hitungZona();
 }
 
 // ================= HITUNG ZONA =================
@@ -302,45 +272,40 @@ function updateRingkasan(){
 
 // ================= PROSES WA =================
 function proses(){
-function proses(){
 
-  let btn = document.getElementById("btnCheckout");
-  if(btn.classList.contains("disabled")){
-    alert("Belum memenuhi minimal belanja.");
-    return;
-  }
+ if(document.getElementById("btnCheckout").classList.contains("disabled")){
+  alert("Belum memenuhi minimal belanja.");
+  return;
+ }
 
-  let noWa = document.getElementById("waPembeli").value.trim();
+ let noWa=document.getElementById("waPembeli").value.trim();
 
-  if(noWa==="" || !tujuanLat || Object.keys(produkDipilih).length===0){
-    alert("Lengkapi data dulu!");
-    return;
-  }
+ if(noWa==""||!tujuanLat||Object.keys(produkDipilih).length==0){
+  alert("Lengkapi data dulu!");
+  return;
+ }
 
-  let total=0;
-  let totalItem=0;
-  let detail="";
+ let total=0;
+ let totalItem=0;
+ let detail="";
 
-  Object.values(produkDipilih).forEach(p=>{
-    let sub=p.harga*p.qty;
-    total+=sub;
-    totalItem+=p.qty;
+ Object.values(produkDipilih).forEach(p=>{
+  let sub=p.harga*p.qty;
+  total+=sub;
+  totalItem+=p.qty;
 
-    detail+=
-      "• "+p.nama+"\n"+
-      "  Qty: "+p.qty+"\n"+
-      "  Harga: Rp "+sub.toLocaleString()+"\n\n";
-  });
+  detail += 
+  "• "+p.nama+"\n"+
+  "  Qty: "+p.qty+"\n"+
+  "  Harga: Rp"+sub.toLocaleString()+"\n\n";
+ });
 
-  let totalBayar = total + ongkirFix;
+ let totalBayar=total+ongkirFix;
+ let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
+ let tanggal=new Date().toLocaleDateString("id-ID");
+ let orderId=Date.now();
 
-  let linkMaps =
-  `https://www.google.com/maps/search/?api=1&query=${tujuanLat},${tujuanLng}`;
-
-  let tanggal=new Date().toLocaleDateString("id-ID");
-  let orderId=Date.now();
-
-  let pesan =
+ let pesan =
 "━━━━━━━━━━━━━━━━━━━━\n"+
 "🧾 INVOICE PESANAN MASUK\n"+
 "━━━━━━━━━━━━━━━━━━━━\n\n"+
@@ -353,12 +318,12 @@ function proses(){
 detail+
 "━━━━━━━━━━━━━━━━━━━━\n"+
 "💰 RINCIAN PEMBAYARAN\n"+
-"━━━━━━━━━━━━━━━━━━━━\n"+
+"━━━━━━━━━━━━━━━━━━━━\n\n"+
 "Total Item   : "+totalItem+"\n"+
-"Total Barang : Rp "+total.toLocaleString()+"\n"+
-"Ongkir       : Rp "+ongkirFix.toLocaleString()+"\n"+
+"Total Barang : Rp"+total.toLocaleString()+"\n"+
+"Ongkir       : Rp"+ongkirFix.toLocaleString()+"\n"+
 "────────────────────\n"+
-"TOTAL BAYAR  : Rp "+totalBayar.toLocaleString()+"\n\n"+
+"TOTAL BAYAR  : Rp"+totalBayar.toLocaleString()+"\n\n"+
 "━━━━━━━━━━━━━━━━━━━━\n"+
 "📍 Titik Lokasi Pembeli\n"+
 "━━━━━━━━━━━━━━━━━━━━\n"+
@@ -366,11 +331,19 @@ linkMaps+"\n\n"+
 "⚠️ Mohon cek kembali detail pesanan sebelum diproses.\n"+
 "━━━━━━━━━━━━━━━━━━━━";
 
-  window.open(
-    "https://wa.me/6282319264646?text="+encodeURIComponent(pesan),
-    "_blank"
-  );
+ window.open(
+   "https://wa.me/6282319264646?text="+encodeURIComponent(pesan),
+   "_blank"
+ );
 }
+// ================= SCROLL =================
+function scrollToTop(){
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function scrollToBottom(){
+ window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+
 </script>
 </body>
 </html>
