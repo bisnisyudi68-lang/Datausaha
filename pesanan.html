@@ -311,7 +311,13 @@ function proses(){
  });
 
  let totalBayar=total+ongkirFix;
- let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
+if(!tujuanLat || !tujuanLng){
+  alert("Silakan klik Gunakan Lokasi Saya dulu!");
+  return;
+}
+
+let totalBayar = total + ongkirFix;
+let linkMaps = `https://www.google.com/maps/search/?api=1&query=${tujuanLat},${tujuanLng}`;
  let tanggal=new Date().toLocaleDateString("id-ID");
  let orderId=Date.now();
 
