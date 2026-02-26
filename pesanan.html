@@ -199,9 +199,19 @@ map.on('click',function(e){
 });
 
 function gunakanLokasi(){
- navigator.geolocation.getCurrentPosition(pos=>{
-  setLokasi(pos.coords.latitude,pos.coords.longitude);
- });
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      setLokasi(pos.coords.latitude, pos.coords.longitude);
+    },
+    function(err){
+      alert("Gagal ambil lokasi: " + err.message);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    }
+  );
 }
 
 function setLokasi(lat,lng){
