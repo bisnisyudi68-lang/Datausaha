@@ -277,11 +277,13 @@ fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetNa
 .then(data=>{
  try{
    let json=JSON.parse(data.substring(47).slice(0,-2));
-   semuaProduk=json.table.rows.map(r=>({
-     kode:r.c[0]?.v || "",
-     nama:r.c[1]?.v || "",
-     harga:r.c[2]?.v || 0
-   }));
+   semuaProduk=json.table.rows
+.filter(r=>r.c && r.c[0])
+.map(r=>({
+  kode:r.c[0]?.v || "",
+  nama:r.c[1]?.v || "",
+  harga:Number(r.c[3]?.v || 0)
+}));
    renderProduk();
  }catch(err){
    console.log("Gagal parsing sheet:",err);
