@@ -116,7 +116,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetNa
    semuaProduk=json.table.rows
 .filter(r=>r.c && r.c[0])
 .map(r=>({
-  kode:r.c[0]?.v || "",
+  kode:r.c[7]?.v || "",
   nama:r.c[1]?.v || "",
   harga:Number(r.c[3]?.v || 0)
 }));
