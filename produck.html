@@ -102,8 +102,6 @@ Checkout & Kirim WhatsApp
 <script>
 const sheetUrl = "https://docs.google.com/spreadsheets/d/1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4/gviz/tq?sheet=ZEVAN&tqx=out:json";
 
-let semuaProduk = [];
-
 fetch(sheetUrl)
   .then(res => res.text())
   .then(data => {
@@ -114,11 +112,11 @@ fetch(sheetUrl)
     );
 
     semuaProduk = json.table.rows
-      .slice(1) // hapus header
+      .slice(1)
       .map(r => ({
-        kolom0: r.c[0]?.v || "",
-        kolom2: Number(r.c[2]?.v || 0),
-        kolom4: Number(r.c[4]?.v || 0)
+        kode: r.c[0]?.v || "",      // kolom A
+        nama: r.c[1]?.v || "",      // kolom B
+        harga: Number(r.c[2]?.v || 0)  // kolom C
       }));
 
     console.log("DATA MASUK:", semuaProduk);
@@ -126,8 +124,7 @@ fetch(sheetUrl)
     renderProduk();
 
   })
-  .catch(err => console.log("ERROR FETCH:", err));
-
+  .catch(err => console.log("ERROR:", err));
 function renderProduk(){
   const container = document.getElementById("produk");
   container.innerHTML = "";
