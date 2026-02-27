@@ -119,7 +119,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetNa
         .map(r=>({
           kolom0: r.c[0]?.v || "",
           kolom2: r.c[2]?.v || "",
-          kolom5: Number(r.c[5]?.v || 0)
+          kolom5: Number(r.c[4]?.v || 0)
         }));
 
       renderProduk();
