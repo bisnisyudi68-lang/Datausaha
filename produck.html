@@ -108,22 +108,21 @@ const sheetName="ZEVAN";
 let semuaProduk=[];
 let produkDipilih={};
 
-fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`)
+fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tqx=out:json`)
   .then(res=>res.text())
   .then(data=>{
-    try{
-      let json=JSON.parse(data.substring(47).slice(0,-2));
-      
-      semuaProduk=json.table.rows
-        .filter(r=>r.c && r.c[0])
-        .map(r=>({
-          kolom0: r.c[0]?.v || "",
-          kolom2: r.c[2]?.v || "",
-          kolom5: Number(r.c[4]?.v || 0)
-        }));
+    let json=JSON.parse(data.substring(47).slice(0,-2));
 
-      renderProduk();
+    semuaProduk=json.table.rows
+      .slice(1)
+      .map(r=>({
+        kode: r.c[0]?.v || "",
+        nama: r.c[1]?.v || "",
+        harga: Number(r.c[4]?.v || 0)
+      }));
 
+    renderProduk();
+  });
     }catch(err){
       console.log("Gagal parsing sheet:",err);
     }
