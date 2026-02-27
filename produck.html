@@ -118,7 +118,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetNa
 .map(r=>({
   kode:r.c[0]?.v || "",
   nama:r.c[2]?.v || "",
-  harga:Number(r.c[4]?.v || 0)
+  harga:Number(r.c[2]?.v || 0)
 }));
    renderProduk();
  }catch(err){
