@@ -105,30 +105,30 @@ Checkout & Kirim WhatsApp
 const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
 const sheetName="ZEVAN";
 
-let semuaProduk=[];
-let produkDipilih={};
-
-fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`)
+fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tqx=out:json`)
 .then(res=>res.text())
 .then(data=>{
- try{
-   let json=JSON.parse(data.substring(47).slice(0,-2));
-   semuaProduk=json.table.rows
-.filter(r=>r.c && r.c[0])
-.map(r=>({
-  kode:r.c[0]?.v || "",
-  nama:r.c[2]?.v || "",
-  harga:Number(r.c[2]?.v || 0)
-}));
-   renderProduk();
- }catch(err){
-   console.log("Gagal parsing sheet:",err);
- }
+  try{
+    let json=JSON.parse(data.substring(47).slice(0,-2));
+
+    semuaProduk=json.table.rows
+    .filter(r=>r.c && r.c[0])
+    .map(r=>({
+      kode:r.c[0]?.v || "",
+      nama:r.c[2]?.v || "",
+      harga:Number(r.c[4]?.v || 0)
+    }));
+
+    console.log("ZEVAN:",semuaProduk);
+    renderProduk();
+
+  }catch(err){
+    console.log("Gagal parsing:",err);
+  }
 })
 .catch(err=>{
- console.log("Gagal fetch sheet:",err);
+  console.log("Gagal fetch:",err);
 });
-
 
 // ================= PRODUK =================
 function renderProduk(){
