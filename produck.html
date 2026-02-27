@@ -100,47 +100,36 @@ Checkout & Kirim WhatsApp
 
 
 <script>
-const sheetUrl = "https://docs.google.com/spreadsheets/d/1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4/gviz/tq?sheet=ZEVAN&tqx=out:json";
 
-let semuaProduk = [];
+// ================= GOOGLE SHEET =================
+const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
+const sheetName="ZEVAN";
 
-fetch(sheetUrl)
-  .then(res => res.text())
-  .then(data => {
+let semuaProduk=[];
+let produkDipilih={};
 
-    const json = JSON.parse(
-      data.replace("google.visualization.Query.setResponse(", "")
-          .slice(0, -2)
-    );
+fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`)
+.then(res=>res.text())
+.then(data=>{
+ try{
+   let json=JSON.parse(data.substring(47).slice(0,-2));
+   semuaProduk=json.table.rows
+.filter(r=>r.c && r.c[0])
+.map(r=>({
+  kode:r.c[0]?.v || "",
+  nama:r.c[2]?.v || "",
+  harga:Number(r.c[4]?.v || 0)
+}));
+   renderProduk();
+ }catch(err){
+   console.log("Gagal parsing sheet:",err);
+ }
+})
+.catch(err=>{
+ console.log("Gagal fetch sheet:",err);
+});
 
-    semuaProduk = json.table.rows
-      .slice(1)
-      .map(r => ({
-        kode: r.c[0]?.v || "",        // Kolom A
-        nama: r.c[2]?.v || "",        // Kolom C
-        harga: Number(r.c[4]?.v || 0) // Kolom E
-      }));
 
-    console.log("DATA ZEVAN:", semuaProduk);
-
-    renderProduk();
-
-  })
-  .catch(err => console.log("ERROR FETCH:", err));
-function renderProduk(){
-  const container = document.getElementById("produk");
-  container.innerHTML = "";
-
-  semuaProduk.forEach(p => {
-    container.innerHTML += `
-      <div style="padding:10px;border-bottom:1px solid #ccc">
-        <b>${p.kolom0}</b><br>
-        Harga 1: Rp ${p.kolom2.toLocaleString()}<br>
-        Harga 2: Rp ${p.kolom4.toLocaleString()}
-      </div>
-    `;
-  });
-}
 // ================= PRODUK =================
 function renderProduk(){
  let keyword=document.getElementById("cari").value.toLowerCase();
