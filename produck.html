@@ -98,6 +98,7 @@ Checkout & Kirim WhatsApp
 <button onclick="scrollToBottom()">↓</button>
 </div>
 
+
 <script>
 
 // ================= GOOGLE SHEET =================
@@ -110,14 +111,24 @@ let produkDipilih={};
 fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`)
 .then(res=>res.text())
 .then(data=>{
- let json=JSON.parse(data.substring(47).slice(0,-2));
- semuaProduk=json.table.rows.map(r=>({
-   kode:r.c[0]?.v||"",
-   nama:r.c[1]?.v||"",
-   harga:r.c[3]?.v||0
- }));
- renderProduk();
+ try{
+   let json=JSON.parse(data.substring(47).slice(0,-2));
+   semuaProduk=json.table.rows
+.filter(r=>r.c && r.c[0])
+.map(r=>({
+  kode:r.c[7]?.v || "",
+  nama:r.c[1]?.v || "",
+  harga:Number(r.c[3]?.v || 0)
+}));
+   renderProduk();
+ }catch(err){
+   console.log("Gagal parsing sheet:",err);
+ }
+})
+.catch(err=>{
+ console.log("Gagal fetch sheet:",err);
 });
+
 
 // ================= PRODUK =================
 function renderProduk(){
@@ -128,6 +139,7 @@ function renderProduk(){
  semuaProduk
  .filter(p=>p.nama.toLowerCase().includes(keyword))
  .forEach(p=>{
+
    let div=document.createElement("div");
    div.className="card";
    let qty=produkDipilih[p.kode]?.qty||0;
@@ -135,8 +147,9 @@ function renderProduk(){
    div.innerHTML=`
    <b>${p.nama}</b><br>
    ${p.kode}<br>
- <span class="harga">Rp ${Math.round(p.harga).toLocaleString()}</span>
-`;
+   <span class="harga">Rp ${Math.round(p.harga).toLocaleString()}</span>
+   `;
+
    if(qty==0){
      let btn=document.createElement("button");
      btn.className="btnTambah";
@@ -147,9 +160,9 @@ function renderProduk(){
      let box=document.createElement("div");
      box.className="qtyBox";
      box.innerHTML=`
-      <button class="qtyBtn" onclick="kurang('${p.kode}')">-</button>
-      <span>${qty}</span>
-      <button class="qtyBtn" onclick="tambah('${p.kode}')">+</button>
+       <button class="qtyBtn" onclick="kurang('${p.kode}')">-</button>
+       <span>${qty}</span>
+       <button class="qtyBtn" onclick="tambah('${p.kode}')">+</button>
      `;
      div.appendChild(box);
    }
@@ -171,6 +184,7 @@ function kurang(k){
  renderProduk();
 }
 
+
 // ================= MAP =================
 const tokoLat=-6.883831;
 const tokoLng=108.302788;
@@ -180,28 +194,38 @@ let tujuanLng=null;
 let ongkirFix=0;
 let jarakFix=0;
 let minimalBelanja=0;
+let marker;
 
 var map=L.map('map').setView([tokoLat,tokoLng],15);
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-  attribution: '&copy; OpenStreetMap contributors'
-}
+{ attribution:'&copy; OpenStreetMap contributors'}
 ).addTo(map);
 
-L.marker([tokoLat,tokoLng]).addTo(map).bindPopup("Lokasi Penjual").openPopup();
-
-let marker;
+L.marker([tokoLat,tokoLng])
+.addTo(map)
+.bindPopup("Lokasi Penjual")
+.openPopup();
 
 map.on('click',function(e){
  setLokasi(e.latlng.lat,e.latlng.lng);
 });
 
 function gunakanLokasi(){
- navigator.geolocation.getCurrentPosition(pos=>{
-  setLokasi(pos.coords.latitude,pos.coords.longitude);
- });
+ navigator.geolocation.getCurrentPosition(
+  function(pos){
+   setLokasi(pos.coords.latitude,pos.coords.longitude);
+  },
+  function(err){
+   alert("Gagal ambil lokasi: "+err.message);
+  },
+  {
+   enableHighAccuracy:true,
+   timeout:15000,
+   maximumAge:0
+  }
+ );
 }
 
 function setLokasi(lat,lng){
@@ -212,29 +236,39 @@ function setLokasi(lat,lng){
 
  marker=L.marker([lat,lng])
  .addTo(map)
- .bindPopup("Pesanan akan di kirim sesuai lokasi ini").openPopup();
+ .bindPopup("Pesanan akan di kirim ke lokasi ini")
+ .openPopup();
+
+ map.setView([lat,lng],17);
 
  hitungZona();
 }
 
+
 // ================= HITUNG ZONA =================
 function hitungZona(){
- jarakFix=map.distance([tokoLat,tokoLng],[tujuanLat,tujuanLng])/1000;
+
+ jarakFix=map.distance(
+  [tokoLat,tokoLng],
+  [tujuanLat,tujuanLng]
+ )/1000;
 
  ongkirFix=Math.round(jarakFix*2000);
- if(ongkirFix<10000)ongkirFix=10000;
+ if(ongkirFix<10000) ongkirFix=10000;
 
- if(jarakFix<=10)minimalBelanja=0;
- else if(jarakFix<=20)minimalBelanja=200000;
- else if(jarakFix<=30)minimalBelanja=300000;
- else if(jarakFix<=40)minimalBelanja=500000;
+ if(jarakFix<=10) minimalBelanja=0;
+ else if(jarakFix<=20) minimalBelanja=200000;
+ else if(jarakFix<=30) minimalBelanja=300000;
+ else if(jarakFix<=40) minimalBelanja=500000;
  else minimalBelanja=700000;
 
  updateRingkasan();
 }
 
-// ================= RINGKASAN + VALIDASI =================
+
+// ================= RINGKASAN =================
 function updateRingkasan(){
+
  let total=0,totalItem=0;
 
  Object.values(produkDipilih).forEach(p=>{
@@ -258,17 +292,17 @@ function updateRingkasan(){
  total.toLocaleString();
 
  if(tujuanLat){
-  let kurang = minimalBelanja-total;
+  let kurang=minimalBelanja-total;
   document.getElementById("infoZona").innerHTML=
   "Jarak: "+jarakFix.toFixed(1)+" km<br>"+
   "Ongkir: Rp"+ongkirFix.toLocaleString()+"<br>"+
   "Minimal Belanja: Rp"+minimalBelanja.toLocaleString()+
-  (minimalBelanja>0 && total<minimalBelanja ?
-   "<br><span style='color:red'>Tambah Rp"+kurang.toLocaleString()+" lagi agar bisa diantar</span>"
-   :
-   "<br><span style='color:green'>✔ Siap dikirim</span>");
+  (minimalBelanja>0 && total<minimalBelanja
+   ? "<br><span style='color:red'>Tambah Rp"+kurang.toLocaleString()+" lagi agar bisa diantar</span>"
+   : "<br><span style='color:green'>✔ Siap dikirim</span>");
  }
 }
+
 
 // ================= PROSES WA =================
 function proses(){
@@ -280,32 +314,33 @@ function proses(){
 
  let noWa=document.getElementById("waPembeli").value.trim();
 
- if(noWa==""||!tujuanLat||Object.keys(produkDipilih).length==0){
+ if(noWa=="" || !tujuanLat || Object.keys(produkDipilih).length==0){
   alert("Lengkapi data dulu!");
   return;
  }
 
- let total=0;
- let totalItem=0;
- let detail="";
+ let total=0,totalItem=0,detail="";
 
  Object.values(produkDipilih).forEach(p=>{
   let sub=p.harga*p.qty;
   total+=sub;
   totalItem+=p.qty;
 
-  detail += 
+  detail+=
   "• "+p.nama+"\n"+
   "  Qty: "+p.qty+"\n"+
   "  Harga: Rp"+sub.toLocaleString()+"\n\n";
  });
 
  let totalBayar=total+ongkirFix;
- let linkMaps=`https://www.google.com/maps?q=${tujuanLat},${tujuanLng}`;
+
+ let linkMaps=
+ `https://www.google.com/maps/search/?api=1&query=${tujuanLat},${tujuanLng}`;
+
  let tanggal=new Date().toLocaleDateString("id-ID");
  let orderId=Date.now();
 
- let pesan =
+ let pesan=
 "━━━━━━━━━━━━━━━━━━━━\n"+
 "🧾 INVOICE PESANAN MASUK\n"+
 "━━━━━━━━━━━━━━━━━━━━\n\n"+
@@ -336,6 +371,8 @@ linkMaps+"\n\n"+
    "_blank"
  );
 }
+
+
 // ================= SCROLL =================
 function scrollToTop(){
  window.scrollTo({top:0,behavior:'smooth'});
@@ -345,5 +382,3 @@ function scrollToBottom(){
 }
 
 </script>
-</body>
-</html>
