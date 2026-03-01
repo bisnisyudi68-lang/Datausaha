@@ -120,6 +120,9 @@ Checkout & Kirim WhatsApp
 // ================= GOOGLE SHEET =================
 const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
 const sheetName="ZEVAN";
+function rupiah(angka){
+  return Math.round(angka).toLocaleString("id-ID");
+}
 
 let semuaProduk=[];
 let produkDipilih={};
@@ -383,11 +386,10 @@ function proses(){
   total+=sub;
   totalItem+=p.qty;
 
-  detail+=
-  "• "+p.nama+"\n"+
-  "  Qty: "+p.qty+"\n"+
-  "  Harga: Rp"+sub.toLocaleString()+"\n\n";
- });
+  detail +=
+"• "+p.nama+"\n"+
+"  Qty: "+qty+"\n"+
+"  Harga: Rp"+rupiah(subtotal)+"\n\n";
 
  let totalBayar=total+ongkirFix;
 
