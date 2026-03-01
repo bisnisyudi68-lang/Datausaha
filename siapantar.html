@@ -201,19 +201,29 @@ var map=L.map('map').setView([tokoLat,tokoLng],15);
 // Layer Normal
 var normalLayer = L.tileLayer(
  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
- { attribution:'&copy; OpenStreetMap contributors'}
+ { attribution:'&copy; OpenStreetMap contributors' }
 ).addTo(map);
 
-// Layer Satelit
+// Layer Satelit (Foto Udara)
 var satelliteLayer = L.tileLayer(
  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
- { attribution:'Tiles © Esri'}
+ { attribution:'Tiles © Esri' }
+);
+
+// Layer Label (Nama Jalan & Kota)
+var labelLayer = L.tileLayer(
+ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+ {
+   attribution:'&copy; OpenStreetMap contributors',
+   opacity: 0.6
+ }
 );
 
 // Tombol pilih layer
 L.control.layers({
  "Normal": normalLayer,
- "Satelit": satelliteLayer
+ "Satelit": satelliteLayer,
+ "Satelit + Nama": L.layerGroup([satelliteLayer, labelLayer])
 }).addTo(map);
 
 L.marker([tokoLat,tokoLng])
