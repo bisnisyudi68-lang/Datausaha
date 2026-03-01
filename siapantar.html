@@ -163,11 +163,11 @@ function renderProduk(){
    div.className="card";
    let qty=produkDipilih[p.kode]?.qty||0;
 
-   div.innerHTML=`
-   <b>${p.nama}</b><br>
-   ${p.kode}<br>
-   <span class="harga">Rp ${Math.round(p.harga).toLocaleString()}</span>
-   `;
+   div.innerHTML = `
+<b>${p.nama}</b><br>
+${p.kode}<br>
+<span class="harga">Rp ${Math.round(p.harga).toLocaleString("id-ID")}</span>
+`;
 
    if(qty==0){
      let btn=document.createElement("button");
