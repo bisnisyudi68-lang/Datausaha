@@ -382,15 +382,15 @@ function proses(){
  let total=0,totalItem=0,detail="";
 
  Object.values(produkDipilih).forEach(p=>{
-  let sub=p.harga*p.qty;
-  total+=sub;
-  totalItem+=p.qty;
+    let sub = p.harga * p.qty;
+    total += sub;
+    totalItem += p.qty;
 
-  detail +=
-"• "+p.nama+"\n"+
-"  Qty: "+qty+"\n"+
-"  Harga: Rp"+rupiah(subtotal)+"\n\n";
-
+    detail +=
+    "• "+p.nama+"\n"+
+    "  Qty: "+p.qty+"\n"+
+    "  Harga: Rp"+rupiah(sub)+"\n\n";
+});
  let totalBayar=total+ongkirFix;
 
  let linkMaps=
