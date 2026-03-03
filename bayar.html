@@ -66,7 +66,7 @@ function pilihTransfer(bank,norek,nama){
   kirimWA("TRANSFER",bank,norek,nama);
 }
 
-function kirimWA(metode,bank,norek,nama){
+async function kirimWA(metode,bank,norek,nama){
 
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
