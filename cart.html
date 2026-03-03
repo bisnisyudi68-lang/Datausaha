@@ -108,13 +108,20 @@ function lanjutBayar(){
     return;
   }
 
-  // Simpan data lokasi
+  let noWa = document.getElementById("waPembeli").value.trim();
+
+  if(!noWa){
+    alert("Isi nomor WA dulu");
+    return;
+  }
+
   localStorage.setItem("checkoutData", JSON.stringify({
     lat: tujuanLat,
     lng: tujuanLng,
     desa: namaDesa,
     kecamatan: namaKecamatan,
-    ongkir: ongkir
+    ongkir: ongkir,
+    noWa: noWa   // ⬅ TAMBAHKAN INI
   }));
 
   window.location.href = "bayar.html";
