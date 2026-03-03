@@ -90,46 +90,128 @@ function renderCart(){
 }
 
 // ================= MAP =================
-var map=L.map('map').setView([tokoLat,tokoLng],14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-L.marker([tokoLat,tokoLng]).addTo(map).bindPopup("Toko");
+// ================= MAP =================
+const tokoLat=-6.883831;
+const tokoLng=108.302788;
 
-map.on('click',e=>{
- tujuanLat=e.latlng.lat;
- tujuanLng=e.latlng.lng;
- L.marker([tujuanLat,tujuanLng]).addTo(map);
- ambilAlamat();
+let tujuanLat=null;
+let tujuanLng=null;
+let ongkir=0;
+let jarakFix=0;
+let markerUser=null;
+
+var map=L.map('map').setView([tokoLat,tokoLng],15);
+
+// ===== Layer Normal
+var normalLayer = L.tileLayer(
+ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+ { attribution:'&copy; OpenStreetMap contributors' }
+).addTo(map);
+
+// ===== Layer Satelit
+var satelliteLayer = L.tileLayer(
+ 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+ { attribution:'Tiles © Esri' }
+);
+
+// ===== Layer Label
+var labelLayer = L.tileLayer(
+ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+ { opacity:0.6 }
+);
+
+// ===== Tombol Pilih Layer
+L.control.layers({
+ "Normal": normalLayer,
+ "Satelit": satelliteLayer,
+ "Satelit + Nama": L.layerGroup([satelliteLayer,labelLayer])
+}).addTo(map);
+
+// Marker toko
+L.marker([tokoLat,tokoLng])
+.addTo(map)
+.bindPopup("Lokasi Toko")
+.openPopup();
+
+// Klik map
+map.on('click',function(e){
+ setLokasi(e.latlng.lat,e.latlng.lng);
 });
 
+// Gunakan GPS
 function gunakanLokasi(){
- navigator.geolocation.getCurrentPosition(pos=>{
-  tujuanLat=pos.coords.latitude;
-  tujuanLng=pos.coords.longitude;
-  L.marker([tujuanLat,tujuanLng]).addTo(map);
-  map.setView([tujuanLat,tujuanLng],16);
-  ambilAlamat();
- });
+ navigator.geolocation.getCurrentPosition(
+  function(pos){
+   setLokasi(pos.coords.latitude,pos.coords.longitude);
+  },
+  function(err){
+   alert("Gagal ambil lokasi: "+err.message);
+  },
+  {
+   enableHighAccuracy:true,
+   timeout:15000,
+   maximumAge:0
+  }
+ );
 }
 
+function setLokasi(lat,lng){
+
+ tujuanLat = lat;
+ tujuanLng = lng;
+
+ if(markerUser) map.removeLayer(markerUser);
+
+ markerUser = L.marker([lat,lng])
+ .addTo(map)
+ .bindPopup("Lokasi Pengiriman")
+ .openPopup();
+
+ map.setView([lat,lng],17);
+
+ ambilAlamat();
+}
+
+// ================= AMBIL ALAMAT =================
 function ambilAlamat(){
+
  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${tujuanLat}&lon=${tujuanLng}`)
- .then(res=>res.json())
- .then(data=>{
-   namaDesa=data.address.village||data.address.suburb||"-";
-   namaKecamatan=data.address.county||"-";
+ .then(res => res.json())
+ .then(data => {
+
+   window.namaDesa =
+     data.address.village ||
+     data.address.hamlet ||
+     data.address.suburb ||
+     "-";
+
+   window.namaKecamatan =
+     data.address.subdistrict ||
+     data.address.county ||
+     "-";
+
    hitungOngkir();
  });
 }
 
+// ================= HITUNG ONGKIR =================
 function hitungOngkir(){
- let jarak=map.distance([tokoLat,tokoLng],[tujuanLat,tujuanLng])/1000;
- ongkir=Math.round(jarak*2000);
- if(ongkir<10000) ongkir=10000;
 
- document.getElementById("infoZona").innerHTML=
- "Desa: "+namaDesa+"<br>"+
- "Kecamatan: "+namaKecamatan+"<br>"+
- "Ongkir: Rp"+rupiah(ongkir);
+ jarakFix = map.distance(
+  [tokoLat,tokoLng],
+  [tujuanLat,tujuanLng]
+ )/1000;
+
+ ongkir = Math.round(jarakFix * 2000);
+ if(ongkir < 10000) ongkir = 10000;
+
+ renderCart(); // update total + ongkir realtime
+
+ document.getElementById("infoZona").innerHTML =
+ "Jarak: "+jarakFix.toFixed(1)+" km<br>"+
+ "Ongkir: Rp"+rupiah(ongkir)+"<br>"+
+ "Desa: "+(window.namaDesa || "-")+"<br>"+
+ "Kecamatan: "+(window.namaKecamatan || "-");
 }
 
 // ================= CHECKOUT =================
