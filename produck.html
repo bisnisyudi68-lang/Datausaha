@@ -86,7 +86,23 @@ button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer}
 Belum memilih lokasi
 </div>
 
-<input type="text" id="waPembeli" placeholder="Nomor WhatsApp Anda (08xxxx)">
+<label for="waPembeli" style="font-weight:600; display:block; margin-bottom:5px;">
+Nomor WhatsApp Aktif
+</label>
+
+<input 
+  type="tel" 
+  id="waPembeli"
+  placeholder="Contoh: 0895707198229"
+  pattern="[0-9]+"
+  inputmode="numeric"
+  required
+  style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;"
+>
+
+<small style="color:#777;">
+Pastikan nomor aktif agar pesanan bisa dikonfirmasi.
+</small>
 
 <div class="checkout disabled" id="btnCheckout" onclick="proses()">
 <span id="ringkasan">0 Produk | 0 Pcs | Rp0</span><br>
@@ -104,6 +120,9 @@ Checkout & Kirim WhatsApp
 // ================= GOOGLE SHEET =================
 const sheetId="1iPbtRGldW5yz6tuUZ5oHzMGsnNb4cHyCbAEMkq51qK4";
 const sheetName="ZEVAN";
+function rupiah(angka){
+  return Math.round(angka).toLocaleString("id-ID");
+}
 
 let semuaProduk=[];
 let produkDipilih={};
@@ -144,11 +163,11 @@ function renderProduk(){
    div.className="card";
    let qty=produkDipilih[p.kode]?.qty||0;
 
-   div.innerHTML=`
-   <b>${p.nama}</b><br>
-   ${p.kode}<br>
-   <span class="harga">Rp ${Math.round(p.harga).toLocaleString()}</span>
-   `;
+   div.innerHTML = `
+<b>${p.nama}</b><br>
+${p.kode}<br>
+<span class="harga">Rp ${Math.round(p.harga).toLocaleString("id-ID")}</span>
+`;
 
    if(qty==0){
      let btn=document.createElement("button");
@@ -198,10 +217,33 @@ let marker;
 
 var map=L.map('map').setView([tokoLat,tokoLng],15);
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{ attribution:'&copy; OpenStreetMap contributors'}
+// Layer Normal
+var normalLayer = L.tileLayer(
+ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+ { attribution:'&copy; OpenStreetMap contributors' }
 ).addTo(map);
+
+// Layer Satelit (Foto Udara)
+var satelliteLayer = L.tileLayer(
+ 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+ { attribution:'Tiles © Esri' }
+);
+
+// Layer Label (Nama Jalan & Kota)
+var labelLayer = L.tileLayer(
+ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+ {
+   attribution:'&copy; OpenStreetMap contributors',
+   opacity: 0.6
+ }
+);
+
+// Tombol pilih layer
+L.control.layers({
+ "Normal": normalLayer,
+ "Satelit": satelliteLayer,
+ "Satelit + Nama": L.layerGroup([satelliteLayer, labelLayer])
+}).addTo(map);
 
 L.marker([tokoLat,tokoLng])
 .addTo(map)
@@ -229,21 +271,39 @@ function gunakanLokasi(){
 }
 
 function setLokasi(lat,lng){
- tujuanLat=lat;
- tujuanLng=lng;
+    tujuanLat = lat;
+    tujuanLng = lng;
 
- if(marker) map.removeLayer(marker);
+    if(marker) map.removeLayer(marker);
 
- marker=L.marker([lat,lng])
- .addTo(map)
- .bindPopup("Pesanan akan di kirim ke lokasi ini")
- .openPopup();
+    marker = L.marker([lat,lng])
+    .addTo(map)
+    .bindPopup("Pesanan akan di kirim ke lokasi ini")
+    .openPopup();
 
- map.setView([lat,lng],17);
+    map.setView([lat,lng],17);
 
- hitungZona();
+    // Ambil desa & kecamatan otomatis
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+    .then(res => res.json())
+    .then(data => {
+
+        let desa = data.address.village || 
+                   data.address.hamlet || 
+                   data.address.suburb || "-";
+
+        let kecamatan = data.address.subdistrict || 
+                        data.address.county || "-";
+
+        window.namaDesa = desa;
+        window.namaKecamatan = kecamatan;
+
+        console.log("Desa:", desa);
+        console.log("Kecamatan:", kecamatan);
+    });
+
+    hitungZona();
 }
-
 
 // ================= HITUNG ZONA =================
 function hitungZona(){
@@ -322,16 +382,15 @@ function proses(){
  let total=0,totalItem=0,detail="";
 
  Object.values(produkDipilih).forEach(p=>{
-  let sub=p.harga*p.qty;
-  total+=sub;
-  totalItem+=p.qty;
+    let sub = p.harga * p.qty;
+    total += sub;
+    totalItem += p.qty;
 
-  detail+=
-  "• "+p.nama+"\n"+
-  "  Qty: "+p.qty+"\n"+
-  "  Harga: Rp"+sub.toLocaleString()+"\n\n";
- });
-
+    detail +=
+    "• "+p.nama+"\n"+
+    "  Qty: "+p.qty+"\n"+
+    "  Harga: Rp"+rupiah(sub)+"\n\n";
+});
  let totalBayar=total+ongkirFix;
 
  let linkMaps=
@@ -339,40 +398,91 @@ function proses(){
 
  let tanggal=new Date().toLocaleDateString("id-ID");
  let orderId=Date.now();
-
- let pesan=
+let now = new Date();
+let jam = now.toLocaleTimeString("id-ID");
+let nomorHarian = now.getFullYear().toString().slice(-2) +
+                   (now.getMonth()+1).toString().padStart(2,'0') +
+                   now.getDate().toString().padStart(2,'0') +
+                   "-" +
+                   now.getHours().toString().padStart(2,'0') +
+                   now.getMinutes().toString().padStart(2,'0');
+if(!noWa || noWa.trim() == ""){
+    alert("Silahkan isi nomor WhatsApp terlebih dahulu.");
+    return;
+}
+ let pesan =
 "━━━━━━━━━━━━━━━━━━━━\n"+
-"🧾 INVOICE PESANAN MASUK\n"+
+"🏪 TOKO SIAP ANTAR\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"🧾 INVOICE PESANAN\n"+
 "━━━━━━━━━━━━━━━━━━━━\n\n"+
-"📌 ID Order: #"+orderId+"\n"+
-"📅 Tanggal: "+tanggal+"\n\n"+
+
+"🔢 No Order  : "+nomorHarian+"\n"+
+"📌 ID Sistem : #"+orderId+"\n"+
+"📅 Tanggal   : "+tanggal+"\n"+
+"🕒 Jam       : "+jam+"\n\n"+
+
 "👤 Nomor Pembeli:\n"+noWa+"\n\n"+
+
 "━━━━━━━━━━━━━━━━━━━━\n"+
-"📦 Detail Produk\n"+
+"📦 DETAIL PRODUK\n"+
 "━━━━━━━━━━━━━━━━━━━━\n\n"+
 detail+
+
 "━━━━━━━━━━━━━━━━━━━━\n"+
 "💰 RINCIAN PEMBAYARAN\n"+
 "━━━━━━━━━━━━━━━━━━━━\n\n"+
-"Total Item   : "+totalItem+"\n"+
-"Total Barang : Rp"+total.toLocaleString()+"\n"+
-"Ongkir       : Rp"+ongkirFix.toLocaleString()+"\n"+
-"────────────────────\n"+
-"TOTAL BAYAR  : Rp"+totalBayar.toLocaleString()+"\n\n"+
-"━━━━━━━━━━━━━━━━━━━━\n"+
-"📍 Titik Lokasi Pembeli\n"+
-"━━━━━━━━━━━━━━━━━━━━\n"+
-linkMaps+"\n\n"+
-"⚠️ Mohon cek kembali detail pesanan sebelum diproses.\n"+
-"━━━━━━━━━━━━━━━━━━━━";
 
+"Total Item   : "+totalItem+" pcs\n"+
+"Total Barang : Rp"+rupiah(total)+"\n"+
+"Ongkir       : Rp"+rupiah(ongkirFix)+"\n"+
+"────────────────────\n"+
+"TOTAL BAYAR  : Rp"+rupiah(totalBayar)+"\n\n"+
+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"📍 LOKASI PENGIRIMAN\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"Desa       : "+(window.namaDesa || "-")+"\n"+
+"Kecamatan  : "+(window.namaKecamatan || "-")+"\n"+
+linkMaps+"\n\n"+
+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"🏦 INFORMASI TRANSFER\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"Bank BRI\n"+
+"0046 0105 1342 504\n"+
+"a.n INA KHOZINATUL ASROR\n\n"+
+
+"Status : MENUNGGU TRANSFER\n"+
+"━━━━━━━━━━━━━━━━━━━━\n"+
+"⚠️ Mohon cek kembali pesanan Anda.\n"+
+"Setelah transfer kirim bukti pembayaran ke admin.\n"+
+"━━━━━━━━━━━━━━━━━━━━";
  window.open(
-   "https://wa.me/6282319264646?text="+encodeURIComponent(pesan),
+   "https://wa.me/62895707182299?text="+encodeURIComponent(pesan),
    "_blank"
  );
 }
+// ================= BALAS OTOMATIS KE PEMBELI =================
+let noPembeli = noWa.replace(/\D/g,'');
+if(noPembeli.startsWith("0")){
+  noPembeli = noPembeli.replace(/^0/,"62");
+}
 
+let pesanBalasan =
+"Halo 👋\n\n"+
+"Pesanan Anda sudah kami terima.\n"+
+"Admin akan segera memproses pesanan Anda.\n\n"+
+"Terima kasih telah berbelanja 🙏";
 
+if(noPembeli.length >= 10){
+  setTimeout(function(){
+    window.open(
+      "https://wa.me/"+noPembeli+"?text="+encodeURIComponent(pesanBalasan),
+      "_blank"
+    );
+  },2000);
+}
 // ================= SCROLL =================
 function scrollToTop(){
  window.scrollTo({top:0,behavior:'smooth'});
