@@ -260,9 +260,7 @@ fetch(sheetURL)
 .then(res => res.text())
 .then(data => {
 
-const json = JSON.parse(
-data.substring(47).slice(0,-2)
-);
+const json = JSON.parse(data.substring(47).slice(0,-2));
 
 let rows = json.table.rows;
 
@@ -289,7 +287,8 @@ html += `
 Rp ${Number(harga).toLocaleString()}
 </div>
 
-<button class="btn-cart">
+<button class="btn-cart"
+onclick="tambahKeranjang('${nama}','${harga}','${foto}')">
 + Keranjang
 </button>
 
