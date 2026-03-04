@@ -265,9 +265,9 @@ rows.forEach(row => {
 
 let col = row.split(",");
 
-let nama = col[1];      // Produk
-let harga = col[7];     // Harga_fix
-let foto = col[5];      // Upload foto
+let nama = col[1];     // Produk
+let harga = col[7];    // Harga_fix
+let foto = col[9];     // Foto_fix
 
 if(!nama) return;
 
@@ -284,7 +284,9 @@ html += `
 Rp ${Number(harga).toLocaleString()}
 </div>
 
-<button class="btn-cart">+ Keranjang</button>
+<button class="btn-cart">
++ Keranjang
+</button>
 
 </div>
 </div>
