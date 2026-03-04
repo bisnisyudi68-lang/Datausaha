@@ -421,7 +421,7 @@ document.getElementById("produkList").innerHTML = html;
 <script>
 document.getElementById("searchInput").addEventListener("keyup", function() {
   let filter = this.value.toLowerCase();
-  let products = document.querySelectorAll(".produk");
+  let products = document.querySelectorAll(".produk-card");
 
   products.forEach(function(item){
     let text = item.innerText.toLowerCase();
