@@ -236,6 +236,47 @@ WA: 082319264646
 
 <!-- SCRIPT CART -->
 <script>
+function updateCartCount(){
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total=0;
+
+cart.forEach(p=>{
+total+=p.qty;
+});
+
+document.getElementById("cartCount").innerText=total;
+}
+
+updateCartCount();
+
+function tambahKeranjang(nama,harga,foto){
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+let index = cart.findIndex(p => p.nama === nama);
+
+if(index >= 0){
+
+cart[index].qty += 1;
+
+}else{
+
+cart.push({
+nama:nama,
+harga:Number(harga),
+foto:foto,
+qty:1
+});
+
+}
+
+localStorage.setItem("cart", JSON.stringify(cart));
+
+updateCartCount();
+
+alert("Produk masuk keranjang");
+
+}
 
 function updateCartCount(){
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
