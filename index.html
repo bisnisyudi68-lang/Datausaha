@@ -384,61 +384,46 @@ return "https://drive.google.com/uc?export=view&id="+id;
 <!-- SCRIPT PRODUK GOOGLE SHEET -->
 <script>
 
-const sheetURL =
-"https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=MEMBER";
-
-function convertDrive(url){
-
-if(!url) return "";
-
-let id="";
-
-if(url.includes("id=")){
-id=url.split("id=")[1];
-}
-else if(url.includes("/d/")){
-id=url.split("/d/")[1].split("/")[0];
-}
-
-return "https://drive.google.com/uc?export=view&id="+id;
-
-}
+const sheetURL="https://docs.google.com/spreadsheets/d/19AfachAS9ZyNuut61RB1wqyI_AI6BsmNT1SIWhmSIn8/gviz/tq?sheet=MEMBER";
 
 fetch(sheetURL)
 
-.then(res => res.text())
+.then(res=>res.text())
 
-.then(data => {
+.then(data=>{
 
-const json = JSON.parse(data.substring(47).slice(0,-2));
+const json=JSON.parse(data.substring(47).slice(0,-2));
 
-let rows = json.table.rows;
+let rows=json.table.rows;
 
 let html="";
 
 rows.forEach(r=>{
 
-let nama = r.c[1]?.v;
-let harga = r.c[7]?.v;
-let foto = convertDrive(r.c[9]?.v);
+let nama=r.c[1]?.v;
+let harga=r.c[7]?.v;
+let foto=convertDrive(r.c[9]?.v);
 
 if(!nama) return;
 
-html += `
+html+=`
 
 <div class="produk-card">
 
-<img src="${foto}" style="width:100%;height:140px;object-fit:cover">
+<img src="${foto}" class="produk-img">
 
-<div style="padding:10px">
+<div class="produk-info">
 
-<h4 style="font-size:14px">${nama}</h4>
+<div class="produk-nama">${nama}</div>
 
-<div style="color:#ff6b00;font-weight:bold">
-Rp ${harga}
+<div class="produk-harga">
+Rp ${Number(harga).toLocaleString()}
 </div>
 
-<button class="btn-cart">+ Keranjang</button>
+<button class="btn-cart"
+onclick="tambahKeranjang('${nama}','${harga}','${foto}')">
++ Keranjang
+</button>
 
 </div>
 
@@ -448,7 +433,8 @@ Rp ${harga}
 
 });
 
-document.getElementById("produkList").innerHTML = html;
+document.getElementById("produkList").innerHTML=html;
+
 });
 
 </script>
