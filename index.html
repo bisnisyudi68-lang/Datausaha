@@ -366,17 +366,21 @@ function convertDrive(link){
 
 if(!link) return "";
 
-let id = "";
+let id="";
 
 if(link.includes("id=")){
-id = link.split("id=")[1];
+id = link.split("id=")[1].split("&")[0];
 }
 
-if(link.includes("/d/")){
+else if(link.includes("/d/")){
 id = link.split("/d/")[1].split("/")[0];
 }
 
-return "https://drive.google.com/uc?export=view&id="+id;
+else{
+return link;
+}
+
+return "https://drive.google.com/thumbnail?id="+id+"&sz=w1000";
 
 }
 </script>
